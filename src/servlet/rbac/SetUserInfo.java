@@ -1,6 +1,7 @@
 package servlet.rbac;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -8,11 +9,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -50,71 +47,93 @@ public class SetUserInfo extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		/* 设置响应头部 */
+    	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
+		
+		/* 读取请求内容 */
+		request.setCharacterEncoding("UTF-8");
+		BufferedReader reader = request.getReader();
+		String msg = null;
+		StringBuilder message= new StringBuilder();
+		while ((msg = reader.readLine()) != null){			
+			message.append(msg);
+		}		
+		String jsonStr = message.toString();
+		
+		/* 处理请求内容为空的情况 */
+		if(jsonStr.isEmpty()) 
+		{
+			response.sendError(400);
+			return;
+		}
+		
+		/* 解析JSON获取数据 */
+		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
+		String userId = jsonObj.getString("userId");
+		String userName = jsonObj.getString("userName");
+		String password = jsonObj.getString("password");
+		String telephone = jsonObj.getString("telephone");
+		String email = jsonObj.getString("email");
+		JSONArray roleIds = jsonObj.getJSONArray("roleIds");
+		
 		Connection conn = null;
+		Statement stmt = null;
 		try {
-			ServletInputStream is = request.getInputStream();
-			int nRead = 1;
-			int nTotalRead = 0;
-			byte[] bytes = new byte[10240];
-			while (nRead > 0) {
-				nRead = is.read(bytes, nTotalRead, bytes.length - nTotalRead);
-				if (nRead > 0)
-					nTotalRead = nTotalRead + nRead;
-			}
-			String str = new String(bytes, 0, nTotalRead, "utf-8");
-			JSONObject jsonObj = JSONObject.fromObject(str);
-			String userId = jsonObj.getString("userId");
-			JSONArray roleArray = jsonObj.getJSONArray("updates");
-			Map<String,String>changeInfo = new HashMap<String,String>();
-			for(int i=0;i<roleArray.size();i++) {
-				JSONObject temp = roleArray.getJSONObject(i);
-				for(Object key:temp.keySet()) {
-					changeInfo.put((String)key, (String)temp.get(key));
-				}
-			}
+			/* 连接数据库 */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
-			Statement stmt = conn.createStatement();
-			int error = 0;//鍒ゆ柇鏄惁鍑洪敊
-			if(changeInfo.isEmpty()) error=1;
-			else {				
-				for(String key:changeInfo.keySet()) {
-					String sql = "update user set "+key+" = ? where userId = ?";
-					PreparedStatement ps = conn.prepareStatement(sql);
-					ps.setString(1,changeInfo.get(key));
-					ps.setString(2,userId);
-					try {
-						ps.executeUpdate();
-					}
-					catch(Exception e) {
-						error =1;
-					}
-				}
+			stmt = conn.createStatement();
+			
+			/* 构建SQL语句  */
+			String sql1 = "UPDATE user SET userName=? and password=? and telephone=? and email=? WHERE userId=? ";
+			PreparedStatement ps1 = conn.prepareStatement(sql1);
+			ps1.setString(1, userName);
+			ps1.setString(2, password);
+			ps1.setString(3, telephone);
+			ps1.setString(4, email);
+			ps1.setString(5, userId);
+			
+			String sql2 = "INSERT INTO role_user('roleId', 'userId') VALUES(?, ?)";
+			PreparedStatement ps2 = conn.prepareStatement(sql2);
+			ps2.setString(2, userId);
+			
+			/* 执行SQL语句  */
+			ps1.executeUpdate();
+			for(int i = 0; i < roleIds.size(); ++i) {
+				String roleId = roleIds.getString(i);
+				ps2.setString(1, roleId);
+				ps2.executeUpdate();
 			}
-			if(error==1) {
-				JSONObject jsonobj = new JSONObject();
-				jsonobj.put("success",false);
-				jsonobj.put("msg","鎿嶄綔閿欒,淇敼瀛楁涓虹┖鎴栬?呭悕绉颁笉姝ｇ‘");
-				out = response.getWriter();
-				out.println(jsonobj);
-				stmt.close();
-				conn.close();
-			}
-			else {
-				JSONObject jsonobj = new JSONObject();
-				jsonobj.put("success",false);
-				jsonobj.put("msg","淇敼鎴愬姛");
-				out = response.getWriter();
-				out.println(jsonobj);
-				stmt.close();
-				conn.close();
-			}
-		} catch (SQLException | ClassNotFoundException e) {
+			
+			/* 处理执行结果 */
+			JSONObject responseJson = new JSONObject();
+			responseJson.put("success", true);
+			responseJson.put("msg","修改成功");
+			out.println(responseJson);
+		} catch (SQLException e) {
 			e.printStackTrace();
-		}
+			/* 处理执行结果 */
+			JSONObject responseJson = new JSONObject();
+			responseJson.put("success",false);
+			responseJson.put("msg", e.getMessage());
+			out.println(responseJson);
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		} catch (ClassNotFoundException e) {
+			e.fillInStackTrace();
+		} finally {
+			/* 无论如何关闭连接 */
+			try {
+				stmt.close();
+				conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}	
 	}
-
 }
