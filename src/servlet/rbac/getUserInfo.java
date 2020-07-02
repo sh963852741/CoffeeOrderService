@@ -1,17 +1,15 @@
+package servlet.rbac;
 
-import java.io.*;
+
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import net.sf.json.JSONObject;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
@@ -19,23 +17,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONObject;
+
 /**
- * Servlet implementation class login
+ * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/usermanage/login")
-public class login extends HttpServlet {
+@WebServlet("/api/usermanage/getUserInfo")
+public class getUserInfo extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-		Map<String,String>userTokenMap = new HashMap<String, String>();
-		this.getServletContext().setAttribute("userTokenMap", userTokenMap);
-	}
+       
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public login() {
+    public getUserInfo() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -73,25 +67,22 @@ public class login extends HttpServlet {
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
-				String userName = jsonObj.getString("userName");
-				String password = jsonObj.getString("password");
-				String sql = "select * from user where userName=? and password=?";
+				String userId = jsonObj.getString("userId");
+				String sql = "select * from user where userId= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
-				ps.setString(1, userName);
-				ps.setString(2, password);
+				ps.setString(1, userId);
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
-				if(rs.next()){
-					jsonobj.put("success",true);
-					String token = UUID.randomUUID().toString().replace("-", "");
-					jsonobj.put("token",token);
-					Map<String,String> temp = (Map<String,String>)this.getServletContext().getAttribute("userTokenMap");
-					temp.put(rs.getString("userId"), token);
-					this.getServletContext().setAttribute("userTokenMap",temp);
+				while(rs.next()){
+					jsonobj.put("userName",rs.getString("userName")==null?"":rs.getString("userName"));
+					jsonobj.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
+					jsonobj.put("telephone",rs.getString("telephone")==null?"":rs.getString("telephone"));
+					jsonobj.put("email",rs.getString("email")==null?"":rs.getString("email"));
+					jsonobj.put("password",rs.getString("password")==null?"":rs.getString("password"));
 				}
-				else {
-					jsonobj.put("success",false);
-					jsonobj.put("msg","用户名或密码错误");
+				if(jsonobj.isEmpty()) {
+					jsonobj.put("success", false);
+					jsonobj.put("msg", "不存在该用户Id");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);

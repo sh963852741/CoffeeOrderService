@@ -1,3 +1,4 @@
+package servlet.rbac;
 
 
 import java.io.IOException;
@@ -95,7 +96,7 @@ public class setUserInfo extends HttpServlet {
 			if(error==1) {
 				JSONObject jsonobj = new JSONObject();
 				jsonobj.put("success",false);
-				jsonobj.put("msg","操作错误,修改字段为空或者名称不正确");
+				jsonobj.put("msg","操作错误,修改字段为空或�?�名称不正确");
 				out = response.getWriter();
 				out.println(jsonobj);
 				stmt.close();

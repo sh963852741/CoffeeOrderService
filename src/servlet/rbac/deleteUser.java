@@ -1,3 +1,4 @@
+package servlet.rbac;
 
 
 import java.io.IOException;
@@ -7,32 +8,29 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import net.sf.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 /**
- * Servlet implementation class delete
+ * Servlet implementation class deleteUser
  */
-
-@WebServlet("/api/menu/menuDelete")
-public class menuDelete extends HttpServlet {
+@WebServlet("/api/usermanage/deleteUser")
+public class deleteUser extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public menuDelete() {
+    public deleteUser() {
         super();
         // TODO Auto-generated constructor stub
-       
     }
 
 	/**
@@ -42,6 +40,7 @@ public class menuDelete extends HttpServlet {
 		// TODO Auto-generated method stub
 		doPost(request,response);
 	}
+
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -50,8 +49,12 @@ public class menuDelete extends HttpServlet {
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
-		ServletInputStream is;
 		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
+			Statement stmt = conn.createStatement();
+			ServletInputStream is;
+			int error = 0;
 			is = request.getInputStream();
 			int nRead = 1;
 			int nTotalRead = 0;
@@ -62,48 +65,32 @@ public class menuDelete extends HttpServlet {
 					nTotalRead = nTotalRead + nRead;
 			}
 			String str = new String(bytes, 0, nTotalRead, "utf-8");
-			if(str.isEmpty()) return;
 			JSONObject jsonObj = JSONObject.fromObject(str);
-			Class.forName("com.mysql.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
-			Statement stmt = conn.createStatement();
-			String mealId = jsonObj.getString("mealId");
-			Double price = jsonObj.getDouble("price");
-			int amount = jsonObj.getInt("amount");
-			String menuId = jsonObj.getString("menuId");
-			String type = jsonObj.getString("type");
-			String sql = "delete from meal where mealId=? and price=? and amount=? and menuId=? and type=?";
+			String userId = jsonObj.getString("userId");
+			String sql = "delete from user where userId= ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setString(1, mealId);
-			ps.setDouble(2, price);
-			ps.setInt(3, amount);
-			ps.setString(4, menuId);
-			ps.setString(5, type);
+			ps.setString(1, userId);
 			try {
-				int rowCount = ps.executeUpdate();
-				JSONObject jsonobj = new JSONObject();
-				if(rowCount>0){
-					jsonobj.put("success",true);
-					jsonobj.put("msg","É¾³ı³É¹¦");
-				}
-				out = response.getWriter();
-				out.println(jsonobj);
-				stmt.close();
-				conn.close();
+				ps.executeUpdate();
 			}
 			catch(Exception e) {
-				JSONObject jsonobj = new JSONObject();
-				jsonobj.put("success",false);
-				jsonobj.put("msg","É¾³ıÊ§°Ü");
-				out = response.getWriter();
-				out.println(jsonobj);
-				stmt.close();
-				conn.close();
+				error = 1;
 			}
+			JSONObject jsonobj = new JSONObject();
+			if(error == 1) {
+				jsonobj.put("success", false);
+				jsonobj.put("msg","userIdå¯èƒ½ä¸å­˜åœ?");
+			}
+			else {
+				jsonobj.put("success",true);
+				jsonobj.put("msg","åˆ é™¤æˆåŠŸ");
+			}				
+			out = response.getWriter();
+			out.println(jsonobj);
+			stmt.close();
+			conn.close();
 		} catch (SQLException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 }

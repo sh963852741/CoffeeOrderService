@@ -1,33 +1,34 @@
+package servlet.rbac;
 
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * Servlet implementation class deleteUser
+ * Servlet implementation class getRoleList
  */
-@WebServlet("/api/usermanage/deleteUser")
-public class deleteUser extends HttpServlet {
+@WebServlet("/api/usermanage/getRoleList")
+public class getRoleList extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public deleteUser() {
+    public getRoleList() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -52,44 +53,23 @@ public class deleteUser extends HttpServlet {
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
-			ServletInputStream is;
-			int error = 0;
-			is = request.getInputStream();
-			int nRead = 1;
-			int nTotalRead = 0;
-			byte[] bytes = new byte[10240];
-			while (nRead > 0) {
-				nRead = is.read(bytes, nTotalRead, bytes.length - nTotalRead);
-				if (nRead > 0)
-					nTotalRead = nTotalRead + nRead;
-			}
-			String str = new String(bytes, 0, nTotalRead, "utf-8");
-			JSONObject jsonObj = JSONObject.fromObject(str);
-			String userId = jsonObj.getString("userId");
-			String sql = "delete from user where userId= ?";
-			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setString(1, userId);
-			try {
-				ps.executeUpdate();
-			}
-			catch(Exception e) {
-				error = 1;
-			}
+			String sql = "select * from role";
+			ResultSet rs = stmt.executeQuery(sql);
+			JSONArray jsonarray = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
-			if(error == 1) {
-				jsonobj.put("success", false);
-				jsonobj.put("msg","userId可能不存在");
+			while(rs.next()){
+				jsonobj.put("roleId",rs.getString("roleId"));
+				jsonobj.put("roleName",rs.getString("type"));
+				jsonarray.add(jsonobj);
 			}
-			else {
-				jsonobj.put("success",true);
-				jsonobj.put("msg","删除成功");
-			}				
 			out = response.getWriter();
-			out.println(jsonobj);
+			out.println(jsonarray);
+			rs.close();
 			stmt.close();
 			conn.close();
 		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
+
 }

@@ -1,4 +1,4 @@
-
+package servlet.menu;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -8,16 +8,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet implementation class GetUser
+ * Servlet implementation class AddMenu
  */
-@WebServlet("/api/GetUser")
-public class GetUser extends HttpServlet {
+@WebServlet("/AddMenu")
+public class AddMenu extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public GetUser() {
+    public AddMenu() {
         super();
         // TODO Auto-generated constructor stub
     }
