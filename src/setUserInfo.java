@@ -5,10 +5,9 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -65,24 +64,20 @@ public class setUserInfo extends HttpServlet {
 			String str = new String(bytes, 0, nTotalRead, "utf-8");
 			JSONObject jsonObj = JSONObject.fromObject(str);
 			String userId = jsonObj.getString("userId");
-			JSONArray roleArray = jsonObj.getJSONArray("updates");
-			Map<String,String>changeInfo = new HashMap<String,String>();
-			for(int i=0;i<roleArray.size();i++) {
-				JSONObject temp = roleArray.getJSONObject(i);
-				for(Object key:temp.keySet()) {
-					changeInfo.put((String)key, (String)temp.get(key));
-				}
-			}
+			JSONObject roleObject = jsonObj.getJSONObject("updates");
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
 			int error = 0;//判断是否出错
-			if(changeInfo.isEmpty()) error=1;
-			else {				
-				for(String key:changeInfo.keySet()) {
+			if(roleObject.isEmpty()) error=1;
+			else {
+				Iterator iter = roleObject.entrySet().iterator();
+				while(iter.hasNext()) {
+					Map.Entry entry = (Map.Entry) iter.next();
+					String key = entry.getKey().toString();
 					String sql = "update user set "+key+" = ? where userId = ?";
 					PreparedStatement ps = conn.prepareStatement(sql);
-					ps.setString(1,changeInfo.get(key));
+					ps.setString(1,entry.getValue().toString());
 					ps.setString(2,userId);
 					try {
 						ps.executeUpdate();
