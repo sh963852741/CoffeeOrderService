@@ -10,6 +10,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.util.UUID;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -21,15 +23,15 @@ import net.sf.json.JSONObject;
 /**
  * Servlet implementation class regist
  */
-@WebServlet("/api/menu/modifyMenu")
-public class ModifyMenu extends HttpServlet {
+@WebServlet("/api/menu/addMeal")
+public class AddMeal extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public ModifyMenu() {
+    public AddMeal() {
         super();
         // TODO Auto-generated constructor stub
        
@@ -74,9 +76,11 @@ public class ModifyMenu extends HttpServlet {
 		
 		/* 解析JSON获取数据 */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
+		UUID mealId = UUID.randomUUID();
+		Double price = jsonObj.getDouble("price");
+		int amount = jsonObj.getInt("amount");
 		String menuId = jsonObj.getString("menuId");
 		String type = jsonObj.getString("type");
-		String menuName = jsonObj.getString("menuName");
 		
 		Connection conn = null;
 		Statement stmt = null;
@@ -87,12 +91,14 @@ public class ModifyMenu extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* 构建SQL语句  */
-			String sql = "UPDATE menu SET menuName=? and type=? WHERE menuId=? ";
+			String sql = "insert into meal(mealId, price, amount, menuId, type) values (?,?,?,?,?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
-			ps.setString(1, menuName);
-			ps.setString(2, type);
-			ps.setString(3, menuId);
+			ps.setString(1, mealId.toString());
+			ps.setDouble(2, price);
+			ps.setInt(3, amount);
+			ps.setString(4, menuId);
+			ps.setString(5, type);
 			
 			/* 执行SQL语句  */
 			ps.executeUpdate();
@@ -100,7 +106,7 @@ public class ModifyMenu extends HttpServlet {
 			/* 处理执行结果 */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success", true);
-			responseJson.put("msg","修改成功");
+			responseJson.put("msg","添加成功");
 			out.println(responseJson);
 			conn.commit();
 		} catch (SQLException e) {

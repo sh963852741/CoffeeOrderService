@@ -1,12 +1,12 @@
 package servlet.menu;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -16,20 +16,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
  * Servlet implementation class regist
  */
-@WebServlet("/api/menu/mealModify")
-public class MealModify extends HttpServlet {
+@WebServlet("/api/menu/getMenuList")
+public class GetMenuList extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public MealModify() {
+    public GetMenuList() {
         super();
         // TODO Auto-generated constructor stub
        
@@ -40,9 +41,7 @@ public class MealModify extends HttpServlet {
 	 */
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	response.setCharacterEncoding("UTF-8");
-    	response.setHeader("Allow", "POST");
-    	response.sendError(405);
+    	doPost(request, response);
 	}
     
 	/**
@@ -54,32 +53,7 @@ public class MealModify extends HttpServlet {
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
-		
-		/* 读取请求内容 */
-		request.setCharacterEncoding("UTF-8");
-		BufferedReader reader = request.getReader();
-		String msg = null;
-		StringBuilder message= new StringBuilder();
-		while ((msg = reader.readLine()) != null){			
-			message.append(msg);
-		}		
-		String jsonStr = message.toString();
-		
-		/* 处理请求内容为空的情况 */
-		if(jsonStr.isEmpty()) 
-		{
-			response.sendError(400);
-			return;
-		}
-		
-		/* 解析JSON获取数据 */
-		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
-		String mealId = jsonObj.getString("mealId");
-		Double price = jsonObj.getDouble("price");
-		int amount = jsonObj.getInt("amount");
-		String menuId = jsonObj.getString("menuId");
-		String type = jsonObj.getString("type");
-		
+			
 		Connection conn = null;
 		Statement stmt = null;
 		try {
@@ -89,22 +63,27 @@ public class MealModify extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* 构建SQL语句  */
-			String sql = "UPDATE meal SET price=? and amount=? and type=? and menuId=? WHERE mealId=? ";
+			String sql = "select * from meal;";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
-			ps.setDouble(1, price);
-			ps.setInt(2, amount);
-			ps.setString(3, type);
-			ps.setString(4, menuId);
-			ps.setString(5, mealId);
-			
 			/* 执行SQL语句  */
-			ps.executeUpdate();
+			ResultSet rs = ps.executeQuery();
 			
 			/* 处理执行结果 */
 			JSONObject responseJson = new JSONObject();
+			JSONArray jsonarray = new JSONArray();
+			while(rs.next()){
+				JSONObject jsonobj = new JSONObject();
+				jsonobj.put("userName",rs.getString("userName")==null?"":rs.getString("userName"));
+				jsonobj.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
+				jsonobj.put("telephone",rs.getString("telephone")==null?"":rs.getString("telephone"));
+				jsonobj.put("email",rs.getString("email")==null?"":rs.getString("email"));
+				jsonobj.put("password",rs.getString("password")==null?"":rs.getString("password"));
+				jsonarray.add(jsonobj);
+			}
 			responseJson.put("success", true);
-			responseJson.put("msg","修改成功");
+			responseJson.put("msg","");
+			responseJson.put("data", jsonarray);
 			out.println(responseJson);
 			conn.commit();
 		} catch (SQLException e) {

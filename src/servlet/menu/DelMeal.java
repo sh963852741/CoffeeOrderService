@@ -21,15 +21,15 @@ import net.sf.json.JSONObject;
 /**
  * Servlet implementation class regist
  */
-@WebServlet("/api/menu/mealDelete")
-public class MealDelete extends HttpServlet {
+@WebServlet("/api/menu/delMeal")
+public class DelMeal extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public MealDelete() {
+    public DelMeal() {
         super();
         // TODO Auto-generated constructor stub
        
