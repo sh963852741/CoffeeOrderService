@@ -68,7 +68,7 @@ public class Regist extends HttpServlet {
 			if(!jsonObj.has("email")) {
 				jsonObj.put("email", "");
 			}
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
 			String userId = UUID.randomUUID().toString();

@@ -75,7 +75,7 @@ public class SetUserInfo extends HttpServlet {
 					changeInfo.put((String)key, (String)temp.get(key));
 				}
 			}
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
 			int error = 0;//判断是否出错

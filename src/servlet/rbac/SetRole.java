@@ -67,7 +67,7 @@ public class SetRole extends HttpServlet {
 			JSONObject jsonObj = JSONObject.fromObject(str);
 			String userId = jsonObj.getString("userId");
 			JSONArray roleArray = jsonObj.getJSONArray("roles");
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
 			String sql0 = "select * from role";

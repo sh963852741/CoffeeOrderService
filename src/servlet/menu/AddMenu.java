@@ -84,7 +84,7 @@ public class AddMenu extends HttpServlet {
 		Statement stmt = null;
 		try {
 			/* 连接数据库 */
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			stmt = conn.createStatement();
 			

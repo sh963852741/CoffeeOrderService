@@ -52,7 +52,7 @@ public class DeleteUser extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
 			ServletInputStream is;
@@ -85,7 +85,7 @@ public class DeleteUser extends HttpServlet {
 			}
 			else {
 				jsonobj.put("success",true);
-				jsonobj.put("msg","删除成功");
+				jsonobj.put("msg","");
 			}				
 			out = response.getWriter();
 			out.println(jsonobj);
