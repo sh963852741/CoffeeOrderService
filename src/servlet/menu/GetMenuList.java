@@ -85,7 +85,6 @@ public class GetMenuList extends HttpServlet {
 			responseJson.put("msg","");
 			responseJson.put("data", jsonarray);
 			out.println(responseJson);
-			conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			/* 处理执行结果 */

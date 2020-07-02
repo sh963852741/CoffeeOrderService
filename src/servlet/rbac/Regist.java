@@ -16,8 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 /**
  * Servlet implementation class regist

@@ -108,7 +108,6 @@ public class AddMeal extends HttpServlet {
 			responseJson.put("success", true);
 			responseJson.put("msg","添加成功");
 			out.println(responseJson);
-			conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			/* 处理执行结果 */
