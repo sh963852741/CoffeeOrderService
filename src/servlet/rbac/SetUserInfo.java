@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -24,16 +23,16 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * Servlet implementation class setRole
+ * Servlet implementation class setUserInfo
  */
-@WebServlet("/api/usermanage/setRole")
-public class setRole extends HttpServlet {
+@WebServlet("/api/usermanage/setUserInfo")
+public class SetUserInfo extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public setRole() {
+    public SetUserInfo() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -67,35 +66,37 @@ public class setRole extends HttpServlet {
 			String str = new String(bytes, 0, nTotalRead, "utf-8");
 			JSONObject jsonObj = JSONObject.fromObject(str);
 			String userId = jsonObj.getString("userId");
-			JSONArray roleArray = jsonObj.getJSONArray("roles");
+			JSONArray roleArray = jsonObj.getJSONArray("updates");
+			Map<String,String>changeInfo = new HashMap<String,String>();
+			for(int i=0;i<roleArray.size();i++) {
+				JSONObject temp = roleArray.getJSONObject(i);
+				for(Object key:temp.keySet()) {
+					changeInfo.put((String)key, (String)temp.get(key));
+				}
+			}
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
-			String sql0 = "select * from role";
-			ResultSet rs = stmt.executeQuery(sql0);
-			Map<String,String>roleMap = new HashMap<String,String>();
-			while(rs.next()) {
-				roleMap.put(rs.getString("type"),rs.getString("roleId"));
-			}
 			int error = 0;//判断是否出错
-			for(int i=0;i<roleArray.size();i++) {
-				String sql = "insert into role_user(userId,roleId) values(?,?)";
-				PreparedStatement ps = conn.prepareStatement(sql);
-				String roleId = roleMap.get(roleArray.get(i));
-				if(roleId == null) continue;
-				ps.setString(1, userId);
-				ps.setString(2,roleId);
-				try {
-					ps.executeUpdate();
-				}
-				catch(Exception e) {
-					error = 1;
+			if(changeInfo.isEmpty()) error=1;
+			else {				
+				for(String key:changeInfo.keySet()) {
+					String sql = "update user set "+key+" = ? where userId = ?";
+					PreparedStatement ps = conn.prepareStatement(sql);
+					ps.setString(1,changeInfo.get(key));
+					ps.setString(2,userId);
+					try {
+						ps.executeUpdate();
+					}
+					catch(Exception e) {
+						error =1;
+					}
 				}
 			}
 			if(error==1) {
 				JSONObject jsonobj = new JSONObject();
 				jsonobj.put("success",false);
-				jsonobj.put("msg","操作错误,可能是角色不正确或用户已经具有该角色");
+				jsonobj.put("msg","操作错误,修改字段为空或�?�名称不正确");
 				out = response.getWriter();
 				out.println(jsonobj);
 				stmt.close();
@@ -104,13 +105,13 @@ public class setRole extends HttpServlet {
 			else {
 				JSONObject jsonobj = new JSONObject();
 				jsonobj.put("success",false);
-				jsonobj.put("msg","设置成功");
+				jsonobj.put("msg","修改成功");
 				out = response.getWriter();
 				out.println(jsonobj);
 				stmt.close();
 				conn.close();
 			}
-		} catch (Exception e) {
+		} catch (SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

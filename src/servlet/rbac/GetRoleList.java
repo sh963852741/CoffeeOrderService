@@ -19,16 +19,16 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * Servlet implementation class getUserList
+ * Servlet implementation class getRoleList
  */
-@WebServlet("/api/usermanage/getUserList")
-public class getUserList extends HttpServlet {
+@WebServlet("/api/usermanage/getRoleList")
+public class GetRoleList extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public getUserList() {
+    public GetRoleList() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -53,16 +53,13 @@ public class getUserList extends HttpServlet {
 			Class.forName("com.mysql.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
-			String sql = "select * from user";
+			String sql = "select * from role";
 			ResultSet rs = stmt.executeQuery(sql);
 			JSONArray jsonarray = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
 			while(rs.next()){
-				jsonobj.put("userName",rs.getString("userName")==null?"":rs.getString("userName"));
-				jsonobj.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
-				jsonobj.put("telephone",rs.getString("telephone")==null?"":rs.getString("telephone"));
-				jsonobj.put("email",rs.getString("email")==null?"":rs.getString("email"));
-				jsonobj.put("password",rs.getString("password")==null?"":rs.getString("password"));
+				jsonobj.put("roleId",rs.getString("roleId"));
+				jsonobj.put("roleName",rs.getString("type"));
 				jsonarray.add(jsonobj);
 			}
 			out = response.getWriter();
