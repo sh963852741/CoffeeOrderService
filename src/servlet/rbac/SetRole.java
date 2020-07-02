@@ -1,3 +1,4 @@
+package servlet.rbac;
 
 
 import java.io.IOException;
@@ -5,33 +6,33 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 /**
- * Servlet implementation class regist
+ * Servlet implementation class setRole
  */
-@WebServlet("/api/menu/menuAdd")
-public class menuAdd extends HttpServlet {
+@WebServlet("/api/usermanage/setRole")
+public class SetRole extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public menuAdd() {
+    public SetRole() {
         super();
         // TODO Auto-generated constructor stub
-       
     }
 
 	/**
@@ -39,8 +40,11 @@ public class menuAdd extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doPost(request,response);
+		response.setCharacterEncoding("UTF-8");
+    	response.setHeader("Allow", "POST");
+    	response.sendError(405);
 	}
+
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -60,45 +64,52 @@ public class menuAdd extends HttpServlet {
 					nTotalRead = nTotalRead + nRead;
 			}
 			String str = new String(bytes, 0, nTotalRead, "utf-8");
-			if(str.isEmpty()) return;
 			JSONObject jsonObj = JSONObject.fromObject(str);
-			Class.forName("com.mysql.jdbc.Driver");
+			String userId = jsonObj.getString("userId");
+			JSONArray roleArray = jsonObj.getJSONArray("roles");
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
-			String mealId = jsonObj.getString("mealId");
-			Double price = jsonObj.getDouble("price");
-			int amount = jsonObj.getInt("amount");
-			String menuId = jsonObj.getString("menuId");
-			String type = jsonObj.getString("type");
-			String sql = "insert into meal(mealId,price,amount,menuId,type) values(?,?,?,?,?)";
-			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setString(1, mealId);
-			ps.setDouble(2, price);
-			ps.setInt(3, amount);
-			ps.setString(4, menuId);
-			ps.setString(5, type);
-			try {
-				int rowCount = ps.executeUpdate();
-				JSONObject jsonobj = new JSONObject();
-				if(rowCount>0){
-					jsonobj.put("success",true);
-					jsonobj.put("msg","添加成功");
-				}
-				out = response.getWriter();
-				out.println(jsonobj);
-				stmt.close();
-				conn.close();
+			String sql0 = "select * from role";
+			ResultSet rs = stmt.executeQuery(sql0);
+			Map<String,String>roleMap = new HashMap<String,String>();
+			while(rs.next()) {
+				roleMap.put(rs.getString("type"),rs.getString("roleId"));
 			}
-			catch(Exception e) {
+			int error = 0;//鍒ゆ柇鏄惁鍑洪敊
+			for(int i=0;i<roleArray.size();i++) {
+				String sql = "insert into role_user(userId,roleId) values(?,?)";
+				PreparedStatement ps = conn.prepareStatement(sql);
+				String roleId = roleMap.get(roleArray.get(i));
+				if(roleId == null) continue;
+				ps.setString(1, userId);
+				ps.setString(2,roleId);
+				try {
+					ps.executeUpdate();
+				}
+				catch(Exception e) {
+					error = 1;
+				}
+			}
+			if(error==1) {
 				JSONObject jsonobj = new JSONObject();
 				jsonobj.put("success",false);
-				jsonobj.put("msg","操作失败，该商品可能已经存在");
+				jsonobj.put("msg","鎿嶄綔閿欒,鍙兘鏄鑹蹭笉姝ｇ‘鎴栫敤鎴峰凡缁忓叿鏈夎瑙掕壊");
 				out = response.getWriter();
 				out.println(jsonobj);
 				stmt.close();
 				conn.close();
 			}
-		} catch (SQLException | ClassNotFoundException e) {
+			else {
+				JSONObject jsonobj = new JSONObject();
+				jsonobj.put("success",false);
+				jsonobj.put("msg","璁剧疆鎴愬姛");
+				out = response.getWriter();
+				out.println(jsonobj);
+				stmt.close();
+				conn.close();
+			}
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

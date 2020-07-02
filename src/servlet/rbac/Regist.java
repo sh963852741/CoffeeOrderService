@@ -1,34 +1,33 @@
-import java.io.*;
+package servlet.rbac;
+
+
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import net.sf.json.JSONObject;
-
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import net.sf.json.JSONObject;
 
+import java.util.UUID;
 /**
- * Servlet implementation class modify
+ * Servlet implementation class regist
  */
-@WebServlet("/api/menu/menuModify")
-
-public class menuModify extends HttpServlet {
+@WebServlet("/api/usermanage/regist")
+public class Regist extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
-    
+       
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public menuModify() {
+    public Regist() {
         super();
         // TODO Auto-generated constructor stub
        
@@ -39,16 +38,20 @@ public class menuModify extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		doPost(request,response);
+		response.setCharacterEncoding("UTF-8");
+    	response.setHeader("Allow", "POST");
+    	response.sendError(405);
 	}
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
-		ServletInputStream is;
 		try {
-			is = request.getInputStream();
+			ServletInputStream is = request.getInputStream();
 			int nRead = 1;
 			int nTotalRead = 0;
 			byte[] bytes = new byte[10240];
@@ -58,29 +61,34 @@ public class menuModify extends HttpServlet {
 					nTotalRead = nTotalRead + nRead;
 			}
 			String str = new String(bytes, 0, nTotalRead, "utf-8");
-			if(str.isEmpty()) return;
 			JSONObject jsonObj = JSONObject.fromObject(str);
-			Class.forName("com.mysql.jdbc.Driver");
+			if(!jsonObj.has("telephone")) {
+				jsonObj.put("telephone", "");
+			}
+			if(!jsonObj.has("email")) {
+				jsonObj.put("email", "");
+			}
+			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
-			String mealId = jsonObj.getString("mealId");
-			Double price = jsonObj.getDouble("price");
-			int amount = jsonObj.getInt("amount");
-			String menuId = jsonObj.getString("menuId");
-			String type = jsonObj.getString("type");
-			String sql = "UPDATE meal SET price=? and amount=? and type=? and menuId=? WHERE mealId=? ";
+			String userId = UUID.randomUUID().toString();
+			String password = jsonObj.getString("password");
+			String telephone = jsonObj.getString("telephone");
+			String email = jsonObj.getString("email");
+			String userName = jsonObj.getString("userName");
+			String sql = "insert into user(userId,telephone,email,password,userName) values(?,?,?,?,?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
-			ps.setDouble(1, price);
-			ps.setInt(2, amount);
-			ps.setString(3, type);
-			ps.setString(4, menuId);
-			ps.setString(5, mealId);
+			ps.setString(1, userId);
+			ps.setString(2, telephone);
+			ps.setString(3, email);
+			ps.setString(4, password);
+			ps.setString(5, userName);
 			try {
 				int rowCount = ps.executeUpdate();
 				JSONObject jsonobj = new JSONObject();
 				if(rowCount>0){
 					jsonobj.put("success",true);
-					jsonobj.put("msg","修改成功");
+					jsonobj.put("msg","娉ㄥ唽鎴愬姛");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);
@@ -90,16 +98,15 @@ public class menuModify extends HttpServlet {
 			catch(Exception e) {
 				JSONObject jsonobj = new JSONObject();
 				jsonobj.put("success",false);
-				jsonobj.put("msg","修改失败");
+				jsonobj.put("msg","鎿嶄綔閿欒,鐢ㄦ埛鍙兘宸茬粡娉ㄥ唽");
 				out = response.getWriter();
 				out.println(jsonobj);
 				stmt.close();
 				conn.close();
 			}
 		} catch (SQLException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
+
 }
