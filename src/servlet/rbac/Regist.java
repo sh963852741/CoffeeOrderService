@@ -1,4 +1,4 @@
-package servlet.rbac;
+﻿package servlet.rbac;
 
 
 import java.io.IOException;
@@ -76,7 +76,7 @@ public class Regist extends HttpServlet {
 			String telephone = jsonObj.getString("telephone");
 			String email = jsonObj.getString("email");
 			String userName = jsonObj.getString("userName");
-			String sql = "insert into user(userId,telephone,email,password,userName) values(?,?,?,?,?)";
+			String sql = "insert into user(userId, telephone, email, password, userName) values(?,?,?,?,?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, userId);
 			ps.setString(2, telephone);

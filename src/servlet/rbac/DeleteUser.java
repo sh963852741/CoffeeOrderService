@@ -1,4 +1,4 @@
-package servlet.rbac;
+﻿package servlet.rbac;
 
 
 import java.io.IOException;
@@ -81,7 +81,7 @@ public class DeleteUser extends HttpServlet {
 			JSONObject jsonobj = new JSONObject();
 			if(error == 1) {
 				jsonobj.put("success", false);
-				jsonobj.put("msg","userId可能不存�?");
+				jsonobj.put("msg","userId可能不存在?");
 			}
 			else {
 				jsonobj.put("success",true);

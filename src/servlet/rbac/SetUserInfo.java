@@ -1,4 +1,4 @@
-package servlet.rbac;
+﻿package servlet.rbac;
 
 
 import java.io.BufferedReader;
@@ -87,7 +87,7 @@ public class SetUserInfo extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* 构建SQL语句  */
-			String sql1 = "UPDATE user SET userName=? and password=? and telephone=? and email=? WHERE userId=? ";
+			String sql1 = "UPDATE user SET userName=?, password=?, telephone=?, email=? WHERE userId=?;";
 			PreparedStatement ps1 = conn.prepareStatement(sql1);
 			ps1.setString(1, userName);
 			ps1.setString(2, password);
@@ -95,11 +95,11 @@ public class SetUserInfo extends HttpServlet {
 			ps1.setString(4, email);
 			ps1.setString(5, userId);
 			
-			String sql3 = "DELETE FROM role_user WHERE userId=? ";
+			String sql3 = "DELETE FROM role_user WHERE userId=?;";
 			PreparedStatement ps3 = conn.prepareStatement(sql3);
 			ps3.setString(1, userId);
 			
-			String sql2 = "INSERT INTO role_user('roleName', 'userId') VALUES(?, ?)";
+			String sql2 = "INSERT INTO role_user(roleName, userId) VALUES(?, ?);";
 			PreparedStatement ps2 = conn.prepareStatement(sql2);
 			ps2.setString(2, userId);
 			
