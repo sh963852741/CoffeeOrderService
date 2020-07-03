@@ -1,4 +1,4 @@
-﻿package servlet.menu;
+package servlet.rbac;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,20 +15,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
  * Servlet implementation class regist
  */
-@WebServlet("/api/menu/delMeal")
-public class DelMeal extends HttpServlet {
+@WebServlet("/api/menu/setUserRole")
+public class SetUserRole extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public DelMeal() {
+    public SetUserRole() {
         super();
         // TODO Auto-generated constructor stub
        
@@ -71,33 +71,39 @@ public class DelMeal extends HttpServlet {
 			response.sendError(400);
 			return;
 		}
-		
 		/* 解析JSON获取数据 */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
-		String mealId = jsonObj.getString("mealId");
+		JSONArray roles = jsonObj.getJSONArray("roles");
+		String userId = jsonObj.getString("userId");
 		
 		Connection conn = null;
-		Statement stmt = null;
 		try {
 			/* 连接数据库 */
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection
-				("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT", "coffee", "TklRpGi1");
-			stmt = conn.createStatement();
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			
 			/* 构建SQL语句  */
-			String sql = "delete from meal where mealId=?";
-			PreparedStatement ps = conn.prepareStatement(sql);
 			
-			ps.setString(1, mealId);
+			String sql1 = "DELETE FROM role_user WHERE userId=? ";
+			PreparedStatement ps1 = conn.prepareStatement(sql1);
+			ps1.setString(1, userId);
+			
+			String sql2 = "INSERT INTO role_user('roleName', 'userId') VALUES(?, ?)";
+			PreparedStatement ps2 = conn.prepareStatement(sql2);
+			ps2.setString(2, userId);
 			
 			/* 执行SQL语句  */
-			ps.executeUpdate();
+			ps1.executeUpdate();
+			for(int i = 0; i < roles.size(); ++i) {
+				String role = roles.getString(i);
+				ps2.setString(1, role);
+				ps2.executeUpdate();
+			}
 			
 			/* 处理执行结果 */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success", true);
-			responseJson.put("msg","删除成功");
+			responseJson.put("msg","修改成功");
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -116,11 +122,11 @@ public class DelMeal extends HttpServlet {
 		} finally {
 			/* 无论如何关闭连接 */
 			try {
-				stmt.close();
 				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}	
 	}
+
 }
