@@ -63,7 +63,7 @@ public class GetMenuList extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* ¹¹½¨SQLÓï¾ä  */
-			String sql = "select * from meal;";
+			String sql = "select * from menu;";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
 			/* Ö´ÐÐSQLÓï¾ä  */
@@ -74,13 +74,12 @@ public class GetMenuList extends HttpServlet {
 			JSONArray jsonarray = new JSONArray();
 			while(rs.next()){
 				JSONObject jsonobj = new JSONObject();
-				jsonobj.put("userName",rs.getString("userName")==null?"":rs.getString("userName"));
-				jsonobj.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
-				jsonobj.put("telephone",rs.getString("telephone")==null?"":rs.getString("telephone"));
-				jsonobj.put("email",rs.getString("email")==null?"":rs.getString("email"));
-				jsonobj.put("password",rs.getString("password")==null?"":rs.getString("password"));
+				jsonobj.put("menuId",rs.getString("menuId") == null ? "" : rs.getString("menuId"));
+				jsonobj.put("type",rs.getString("type") == null ? "" : rs.getString("type"));
+				jsonobj.put("menuName",rs.getString("menuName") == null? "" : rs.getString("menuName"));
 				jsonarray.add(jsonobj);
 			}
+			rs.close();
 			responseJson.put("success", true);
 			responseJson.put("msg","");
 			responseJson.put("data", jsonarray);
