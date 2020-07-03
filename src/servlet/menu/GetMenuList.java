@@ -1,4 +1,4 @@
-﻿package servlet.menu;
+package servlet.menu;
 
 import java.io.IOException;
 import java.io.PrintWriter;
