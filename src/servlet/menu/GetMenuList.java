@@ -49,7 +49,7 @@ public class GetMenuList extends HttpServlet {
 	 */
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	/* ÉèÖÃÏìÓ¦Í·²¿ */
+    	/* è®¾ç½®å“åº”å¤´éƒ¨ */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
@@ -57,36 +57,48 @@ public class GetMenuList extends HttpServlet {
 		Connection conn = null;
 		Statement stmt = null;
 		try {
-			/* Á¬½ÓÊı¾İ¿â */
+			/* è¿æ¥æ•°æ®åº“ */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			stmt = conn.createStatement();
 			
-			/* ¹¹½¨SQLÓï¾ä  */
-			String sql = "select * from menu;";
-			PreparedStatement ps = conn.prepareStatement(sql);
+			/* æ„å»ºSQLè¯­å¥  */
+			String sql1 = "select * from menu;";
+			PreparedStatement ps1 = conn.prepareStatement(sql1);
+			String sql2 = "Select count(*) as count From meal "
+					+ "Where exists (Select * from menu Where meal.menuId = ?);";
+			PreparedStatement ps2 = conn.prepareStatement(sql2);
 			
-			/* Ö´ĞĞSQLÓï¾ä  */
-			ResultSet rs = ps.executeQuery();
 			
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* æ‰§è¡ŒSQLè¯­å¥  */
+			ResultSet rs1 = ps1.executeQuery();
+			
+			/* å¤„ç†æ‰§è¡Œç»“æœ */
 			JSONObject responseJson = new JSONObject();
 			JSONArray jsonarray = new JSONArray();
-			while(rs.next()){
+			while(rs1.next()){
+				/* æŸ¥è¯¢é¤ç‚¹æ•° */
+				ps2.setString(1, rs1.getString("menuId"));
+				ResultSet rs2 = ps2.executeQuery();
+				rs2.next();
+				
 				JSONObject jsonobj = new JSONObject();
-				jsonobj.put("menuId",rs.getString("menuId") == null ? "" : rs.getString("menuId"));
-				jsonobj.put("type",rs.getString("type") == null ? "" : rs.getString("type"));
-				jsonobj.put("menuName",rs.getString("menuName") == null? "" : rs.getString("menuName"));
+				jsonobj.put("menuId",rs1.getString("menuId"));
+				jsonobj.put("type",rs1.getString("type") == null ? "" : rs1.getString("type"));
+				jsonobj.put("menuName",rs1.getString("menuName") == null? "" : rs1.getString("menuName"));
+				jsonobj.put("mealCount",rs2.getString("count"));
 				jsonarray.add(jsonobj);
+				rs2.close();
 			}
-			rs.close();
+			rs1.close();
+			
 			responseJson.put("success", true);
 			responseJson.put("msg","");
 			responseJson.put("data", jsonarray);
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* å¤„ç†æ‰§è¡Œç»“æœ */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success",false);
 			responseJson.put("msg", e.getMessage());
@@ -99,7 +111,7 @@ public class GetMenuList extends HttpServlet {
 		} catch (ClassNotFoundException e) {
 			e.fillInStackTrace();
 		} finally {
-			/* ÎŞÂÛÈçºÎ¹Ø±ÕÁ¬½Ó */
+			/* æ— è®ºå¦‚ä½•å…³é—­è¿æ¥ */
 			try {
 				stmt.close();
 				conn.close();
