@@ -47,12 +47,12 @@ public class SetUserInfo extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		/* ÉèÖÃÏìÓ¦Í·²¿ */
+		/* è®¾ç½®å“åº”å¤´éƒ¨ */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		
-		/* ¶ÁÈ¡ÇëÇóÄÚÈİ */
+		/* è¯»å–è¯·æ±‚å†…å®¹ */
 		request.setCharacterEncoding("UTF-8");
 		BufferedReader reader = request.getReader();
 		String msg = null;
@@ -62,31 +62,31 @@ public class SetUserInfo extends HttpServlet {
 		}		
 		String jsonStr = message.toString();
 		
-		/* ´¦ÀíÇëÇóÄÚÈİÎª¿ÕµÄÇé¿ö */
+		/* å¤„ç†è¯·æ±‚å†…å®¹ä¸ºç©ºçš„æƒ…å†µ */
 		if(jsonStr.isEmpty()) 
 		{
 			response.sendError(400);
 			return;
 		}
 		
-		/* ½âÎöJSON»ñÈ¡Êı¾İ */
+		/* è§£æJSONè·å–æ•°æ® */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
 		String userId = jsonObj.getString("userId");
 		String userName = jsonObj.getString("userName");
 		String password = jsonObj.getString("password");
 		String telephone = jsonObj.getString("telephone");
 		String email = jsonObj.getString("email");
-		JSONArray roleIds = jsonObj.getJSONArray("roleIds");
+		JSONArray roles = jsonObj.getJSONArray("roles");
 		
 		Connection conn = null;
 		Statement stmt = null;
 		try {
-			/* Á¬½ÓÊı¾İ¿â */
+			/* è¿æ¥æ•°æ®åº“ */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			stmt = conn.createStatement();
 			
-			/* ¹¹½¨SQLÓï¾ä  */
+			/* æ„å»ºSQLè¯­å¥  */
 			String sql1 = "UPDATE user SET userName=? and password=? and telephone=? and email=? WHERE userId=? ";
 			PreparedStatement ps1 = conn.prepareStatement(sql1);
 			ps1.setString(1, userName);
@@ -95,26 +95,31 @@ public class SetUserInfo extends HttpServlet {
 			ps1.setString(4, email);
 			ps1.setString(5, userId);
 			
-			String sql2 = "INSERT INTO role_user('roleId', 'userId') VALUES(?, ?)";
+			String sql3 = "DELETE FROM role_user WHERE userId=? ";
+			PreparedStatement ps3 = conn.prepareStatement(sql3);
+			ps3.setString(1, userId);
+			
+			String sql2 = "INSERT INTO role_user('roleName', 'userId') VALUES(?, ?)";
 			PreparedStatement ps2 = conn.prepareStatement(sql2);
 			ps2.setString(2, userId);
 			
-			/* Ö´ĞĞSQLÓï¾ä  */
+			/* æ‰§è¡ŒSQLè¯­å¥  */
 			ps1.executeUpdate();
-			for(int i = 0; i < roleIds.size(); ++i) {
-				String roleId = roleIds.getString(i);
-				ps2.setString(1, roleId);
+			ps3.executeUpdate();
+			for(int i = 0; i < roles.size(); ++i) {
+				String role = roles.getString(i);
+				ps2.setString(1, role);
 				ps2.executeUpdate();
 			}
 			
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* å¤„ç†æ‰§è¡Œç»“æœ */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success", true);
-			responseJson.put("msg","ĞŞ¸Ä³É¹¦");
+			responseJson.put("msg","ä¿®æ”¹æˆåŠŸ");
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* å¤„ç†æ‰§è¡Œç»“æœ */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success",false);
 			responseJson.put("msg", e.getMessage());
@@ -127,7 +132,7 @@ public class SetUserInfo extends HttpServlet {
 		} catch (ClassNotFoundException e) {
 			e.fillInStackTrace();
 		} finally {
-			/* ÎŞÂÛÈçºÎ¹Ø±ÕÁ¬½Ó */
+			/* æ— è®ºå¦‚ä½•å…³é—­è¿æ¥ */
 			try {
 				stmt.close();
 				conn.close();

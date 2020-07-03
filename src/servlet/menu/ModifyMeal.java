@@ -1,4 +1,4 @@
-package servlet.menu;
+ï»¿package servlet.menu;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -50,12 +50,12 @@ public class ModifyMeal extends HttpServlet {
 	 */
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	/* ÉèÖÃÏìÓ¦Í·²¿ */
+    	/* è®¾ç½®å“åº”å¤´éƒ¨ */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		
-		/* ¶ÁÈ¡ÇëÇóÄÚÈİ */
+		/* è¯»å–è¯·æ±‚å†…å®¹ */
 		request.setCharacterEncoding("UTF-8");
 		BufferedReader reader = request.getReader();
 		String msg = null;
@@ -65,14 +65,14 @@ public class ModifyMeal extends HttpServlet {
 		}		
 		String jsonStr = message.toString();
 		
-		/* ´¦ÀíÇëÇóÄÚÈİÎª¿ÕµÄÇé¿ö */
+		/* å¤„ç†è¯·æ±‚å†…å®¹ä¸ºç©ºçš„æƒ…å†µ */
 		if(jsonStr.isEmpty()) 
 		{
 			response.sendError(400);
 			return;
 		}
 		
-		/* ½âÎöJSON»ñÈ¡Êı¾İ */
+		/* è§£æJSONè·å–æ•°æ® */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
 		String mealId = jsonObj.getString("mealId");
 		Double price = jsonObj.getDouble("price");
@@ -83,12 +83,12 @@ public class ModifyMeal extends HttpServlet {
 		Connection conn = null;
 		Statement stmt = null;
 		try {
-			/* Á¬½ÓÊı¾İ¿â */
+			/* è¿æ¥æ•°æ®åº“ */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			stmt = conn.createStatement();
 			
-			/* ¹¹½¨SQLÓï¾ä  */
+			/* æ„å»ºSQLè¯­å¥ */
 			String sql = "UPDATE meal SET price=? and amount=? and type=? and menuId=? WHERE mealId=? ";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
@@ -98,17 +98,17 @@ public class ModifyMeal extends HttpServlet {
 			ps.setString(4, menuId);
 			ps.setString(5, mealId);
 			
-			/* Ö´ĞĞSQLÓï¾ä  */
+			/* æ‰§è¡ŒSQLè¯­å¥ */
 			ps.executeUpdate();
 			
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* å¤„ç†æ‰§è¡Œç»“æœ */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success", true);
-			responseJson.put("msg","ĞŞ¸Ä³É¹¦");
+			responseJson.put("msg","ä¿®æ”¹æˆåŠŸ");
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* å¤„ç†æ‰§è¡Œç»“æœ */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success",false);
 			responseJson.put("msg", e.getMessage());
@@ -121,7 +121,7 @@ public class ModifyMeal extends HttpServlet {
 		} catch (ClassNotFoundException e) {
 			e.fillInStackTrace();
 		} finally {
-			/* ÎŞÂÛÈçºÎ¹Ø±ÕÁ¬½Ó */
+			/* æ— è®ºå¦‚ä½•å…³é—­è¿æ¥ */
 			try {
 				stmt.close();
 				conn.close();
@@ -130,5 +130,4 @@ public class ModifyMeal extends HttpServlet {
 			}
 		}	
 	}
-
 }

@@ -1,4 +1,4 @@
-package servlet.menu;
+ï»¿package servlet.menu;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -49,7 +49,7 @@ public class GetMenuList extends HttpServlet {
 	 */
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	/* ÉèÖÃÏìÓ¦Í·²¿ */
+    	/* è®¾ç½®å“åº”å¤´éƒ¨ */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
@@ -57,19 +57,19 @@ public class GetMenuList extends HttpServlet {
 		Connection conn = null;
 		Statement stmt = null;
 		try {
-			/* Á¬½ÓÊı¾İ¿â */
+			/* è¿æ¥æ•°æ®åº“ */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			stmt = conn.createStatement();
 			
-			/* ¹¹½¨SQLÓï¾ä  */
+			/* æ„å»ºSQLè¯­å¥  */
 			String sql = "select * from menu;";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
-			/* Ö´ĞĞSQLÓï¾ä  */
+			/* æ‰§è¡ŒSQLè¯­å¥  */
 			ResultSet rs = ps.executeQuery();
 			
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* å¤„ç†æ‰§è¡Œç»“æœ */
 			JSONObject responseJson = new JSONObject();
 			JSONArray jsonarray = new JSONArray();
 			while(rs.next()){
@@ -79,13 +79,14 @@ public class GetMenuList extends HttpServlet {
 				jsonobj.put("menuName",rs.getString("menuName") == null? "" : rs.getString("menuName"));
 				jsonarray.add(jsonobj);
 			}
+			rs.close();
 			responseJson.put("success", true);
 			responseJson.put("msg","");
 			responseJson.put("data", jsonarray);
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* å¤„ç†æ‰§è¡Œç»“æœ */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success",false);
 			responseJson.put("msg", e.getMessage());
@@ -98,7 +99,7 @@ public class GetMenuList extends HttpServlet {
 		} catch (ClassNotFoundException e) {
 			e.fillInStackTrace();
 		} finally {
-			/* ÎŞÂÛÈçºÎ¹Ø±ÕÁ¬½Ó */
+			/* æ— è®ºå¦‚ä½•å…³é—­è¿æ¥ */
 			try {
 				stmt.close();
 				conn.close();
