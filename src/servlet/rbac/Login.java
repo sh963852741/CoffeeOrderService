@@ -1,4 +1,4 @@
-package servlet.rbac;
+﻿package servlet.rbac;
 
 import java.io.*;
 import java.sql.Connection;
@@ -7,12 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import net.sf.json.JSONObject;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
@@ -27,12 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 public class Login extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-		Map<String,String>userTokenMap = new HashMap<String, String>();
-		this.getServletContext().setAttribute("userTokenMap", userTokenMap);
-	}
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -94,7 +86,7 @@ public class Login extends HttpServlet {
 				}
 				else {
 					jsonobj.put("success",false);
-					jsonobj.put("msg","用户名或密码错误");
+					jsonobj.put("msg", "用户名或密码错误");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);

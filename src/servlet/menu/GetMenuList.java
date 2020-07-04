@@ -1,4 +1,4 @@
-﻿package servlet.menu;
+package servlet.menu;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -63,23 +63,35 @@ public class GetMenuList extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* 构建SQL语句  */
-			String sql = "select * from menu;";
-			PreparedStatement ps = conn.prepareStatement(sql);
+			String sql1 = "select * from menu;";
+			PreparedStatement ps1 = conn.prepareStatement(sql1);
+			String sql2 = "Select count(*) as count From meal "
+					+ "Where exists (Select * from menu Where meal.menuId = ?);";
+			PreparedStatement ps2 = conn.prepareStatement(sql2);
+			
 			
 			/* 执行SQL语句  */
-			ResultSet rs = ps.executeQuery();
+			ResultSet rs1 = ps1.executeQuery();
 			
 			/* 处理执行结果 */
 			JSONObject responseJson = new JSONObject();
 			JSONArray jsonarray = new JSONArray();
-			while(rs.next()){
+			while(rs1.next()){
+				/* 查询餐点数 */
+				ps2.setString(1, rs1.getString("menuId"));
+				ResultSet rs2 = ps2.executeQuery();
+				rs2.next();
+				
 				JSONObject jsonobj = new JSONObject();
-				jsonobj.put("menuId",rs.getString("menuId") == null ? "" : rs.getString("menuId"));
-				jsonobj.put("type",rs.getString("type") == null ? "" : rs.getString("type"));
-				jsonobj.put("menuName",rs.getString("menuName") == null? "" : rs.getString("menuName"));
+				jsonobj.put("menuId",rs1.getString("menuId"));
+				jsonobj.put("type",rs1.getString("type") == null ? "" : rs1.getString("type"));
+				jsonobj.put("menuName",rs1.getString("menuName") == null? "" : rs1.getString("menuName"));
+				jsonobj.put("mealCount",rs2.getString("count"));
 				jsonarray.add(jsonobj);
+				rs2.close();
 			}
-			rs.close();
+			rs1.close();
+			
 			responseJson.put("success", true);
 			responseJson.put("msg","");
 			responseJson.put("data", jsonarray);

@@ -1,4 +1,4 @@
-package servlet.rbac;
+﻿package servlet.rbac;
 
 
 import java.io.IOException;
@@ -58,11 +58,10 @@ public class GetUserList extends HttpServlet {
 			JSONArray jsonarray = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
 			while(rs.next()){
-				jsonobj.put("userName",rs.getString("userName")==null?"":rs.getString("userName"));
-				jsonobj.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
-				jsonobj.put("telephone",rs.getString("telephone")==null?"":rs.getString("telephone"));
-				jsonobj.put("email",rs.getString("email")==null?"":rs.getString("email"));
-				jsonobj.put("password",rs.getString("password")==null?"":rs.getString("password"));
+				jsonobj.put("userName",rs.getString("userName"));
+				jsonobj.put("userId",rs.getString("userId"));
+				jsonobj.put("telephone",rs.getString("telephone") == null ? "" : rs.getString("telephone"));
+				jsonobj.put("email",rs.getString("email") == null ? "" : rs.getString("email"));
 				jsonarray.add(jsonobj);
 			}
 			out = response.getWriter();

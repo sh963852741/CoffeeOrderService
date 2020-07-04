@@ -1,4 +1,4 @@
-﻿package servlet.rbac;
+package servlet.menu;
 
 
 import java.io.IOException;
@@ -19,16 +19,16 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * Servlet implementation class getRoleList
+ * Servlet implementation class getUserList
  */
-@WebServlet("/api/usermanage/getRoleList")
-public class GetRoleList extends HttpServlet {
+@WebServlet("/api/menu/getAllMeal")
+public class GetAllMeal extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public GetRoleList() {
+    public GetAllMeal() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -37,6 +37,7 @@ public class GetRoleList extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
 		doPost(request,response);
 	}
 
@@ -44,6 +45,7 @@ public class GetRoleList extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
@@ -51,16 +53,20 @@ public class GetRoleList extends HttpServlet {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
-			String sql = "select * from role";
+			String sql = "select * from meal";
 			ResultSet rs = stmt.executeQuery(sql);
 			JSONArray jsonarray = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
 			while(rs.next()){
-				jsonarray.add(rs.getString("roleName"));
+				jsonobj.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
+				jsonobj.put("price",rs.getObject("price")==null?"":rs.getDouble("price"));
+				jsonobj.put("amount",rs.getObject("amount")==null?"":rs.getInt("amount"));
+				jsonobj.put("menuId",rs.getString("menuId")==null?"":rs.getString("menuId"));
+				jsonobj.put("type",rs.getString("type")==null?"":rs.getString("type"));
+				jsonarray.add(jsonobj);
 			}
-			jsonobj.put("roles", jsonarray);
 			out = response.getWriter();
-			out.println(jsonobj);
+			out.println(jsonarray);
 			rs.close();
 			stmt.close();
 			conn.close();
