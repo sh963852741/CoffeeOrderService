@@ -7,8 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Map;
-import java.util.UUID;
 import net.sf.json.JSONObject;
 
 import javax.servlet.ServletException;
@@ -17,6 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  * Servlet implementation class login
@@ -51,6 +50,7 @@ public class Login extends HttpServlet {
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
+		HttpSession session = request.getSession();
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
@@ -78,11 +78,10 @@ public class Login extends HttpServlet {
 				JSONObject jsonobj = new JSONObject();
 				if(rs.next()){
 					jsonobj.put("success",true);
-					String token = UUID.randomUUID().toString().replace("-", "");
-					jsonobj.put("token",token);
-					Map<String,String> temp = (Map<String,String>)this.getServletContext().getAttribute("loginedUser");
-					temp.put(rs.getString("userId"), token);
-					this.getServletContext().setAttribute("loginedUser",temp);
+					String sessionId = session.getId();
+					session.setAttribute("sessionId", sessionId);
+					jsonobj.put("sessionId",sessionId);
+					
 				}
 				else {
 					jsonobj.put("success",false);
