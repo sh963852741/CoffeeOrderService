@@ -22,14 +22,14 @@ import net.sf.json.JSONObject;
 /**
  * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/menu/getMealByMenuId")
-public class GetMealByMenuId extends HttpServlet {
+@WebServlet("/api/menu/getMeal")
+public class GetMeal extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public GetMealByMenuId() {
+    public GetMeal() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -67,10 +67,10 @@ public class GetMealByMenuId extends HttpServlet {
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
-				String menuId = jsonObj.getString("menuId");
-				String sql = "select * from meal where menuId= ?";
+				String mealId = jsonObj.getString("mealId");
+				String sql = "select * from meal where mealId= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
-				ps.setString(1, menuId);
+				ps.setString(1, mealId);
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
 				while(rs.next()){
