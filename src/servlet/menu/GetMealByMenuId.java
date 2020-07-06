@@ -82,7 +82,7 @@ public class GetMealByMenuId extends HttpServlet {
 				}
 				if(jsonobj.isEmpty()) {
 					jsonobj.put("success", false);
-					jsonobj.put("msg", "ªÒ»° ß∞‹");
+					jsonobj.put("msg", "Ëé∑ÂèñÂ§±Ë¥•");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);
