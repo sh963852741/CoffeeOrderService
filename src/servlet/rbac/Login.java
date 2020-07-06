@@ -80,9 +80,9 @@ public class Login extends HttpServlet {
 					jsonobj.put("success",true);
 					String token = UUID.randomUUID().toString().replace("-", "");
 					jsonobj.put("token",token);
-					Map<String,String> temp = (Map<String,String>)this.getServletContext().getAttribute("userTokenMap");
+					Map<String,String> temp = (Map<String,String>)this.getServletContext().getAttribute("loginedUser");
 					temp.put(rs.getString("userId"), token);
-					this.getServletContext().setAttribute("userTokenMap",temp);
+					this.getServletContext().setAttribute("loginedUser",temp);
 				}
 				else {
 					jsonobj.put("success",false);
