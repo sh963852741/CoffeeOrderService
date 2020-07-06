@@ -1,4 +1,4 @@
-package servlet.global;
+﻿package servlet.global;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,7 +11,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
@@ -22,10 +21,6 @@ import net.sf.json.JSONObject;
 @WebFilter(filterName = "loginFilter",urlPatterns = "/*")
 public class loginFilter implements Filter {
 
-    /**
-     * Default constructor. 
-     */
-	private FilterConfig config;
     public loginFilter() {
         // TODO Auto-generated constructor stub
     }
@@ -34,8 +29,6 @@ public class loginFilter implements Filter {
 	 * @see Filter#destroy()
 	 */
 	public void destroy() {
-		// TODO Auto-generated method stub
-		this.config = null;
 	}
 
 	/**
@@ -47,11 +40,10 @@ public class loginFilter implements Filter {
 
 		// pass the request along the filter chain
 		HttpServletRequest req = (HttpServletRequest)request;
-		HttpServletResponse resp =(HttpServletResponse) response;
 		HttpSession session = req.getSession();
 		response.setContentType("text/json; charset=utf-8");
 		String uri = req.getRequestURI();
-		if(session.getAttribute("sessionId")==null&&!uri.contains("/login")) {
+		if(session.getAttribute("sessionId")==null && !uri.contains("/login")) {
 			PrintWriter out = response.getWriter();
 			JSONObject jsonobj = new JSONObject();
 			jsonobj.put("success",false);
@@ -67,8 +59,6 @@ public class loginFilter implements Filter {
 	 * @see Filter#init(FilterConfig)
 	 */
 	public void init(FilterConfig fConfig) throws ServletException {
-		// TODO Auto-generated method stub
-		this.config = fConfig;
 	}
 
 }

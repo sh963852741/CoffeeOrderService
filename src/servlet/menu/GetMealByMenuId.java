@@ -22,7 +22,7 @@ import net.sf.json.JSONObject;
 /**
  * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/usermanage/getMealByMenuId")
+@WebServlet("/api/menu/getMealByMenuId")
 public class GetMealByMenuId extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
