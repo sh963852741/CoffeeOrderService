@@ -58,7 +58,7 @@ public class GetAllMeal extends HttpServlet {
 			JSONArray jsonarray = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
 			while(rs.next()){
-				jsonobj.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
+				jsonobj.put("mealId",rs.getString("mealId"));
 				jsonobj.put("price",rs.getObject("price")==null?"":rs.getDouble("price"));
 				jsonobj.put("amount",rs.getObject("amount")==null?"":rs.getInt("amount"));
 				jsonobj.put("menuId",rs.getString("menuId")==null?"":rs.getString("menuId"));
