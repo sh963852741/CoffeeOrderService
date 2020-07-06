@@ -1,15 +1,14 @@
-﻿package servlet.rbac;
+package servlet.menu;
 
-import java.io.*;
+
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Map;
-import java.util.UUID;
-import net.sf.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -18,17 +17,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONObject;
+
 /**
- * Servlet implementation class login
+ * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/usermanage/login")
-public class Login extends HttpServlet {
+@WebServlet("/api/menu/getMeal")
+public class GetMeal extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
+       
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public Login() {
+    public GetMeal() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -38,9 +39,7 @@ public class Login extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		response.setCharacterEncoding("UTF-8");
-    	response.setHeader("Allow", "POST");
-    	response.sendError(405);
+		doPost(request,response);
 	}
 
 	/**
@@ -68,25 +67,22 @@ public class Login extends HttpServlet {
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
-				String userName = jsonObj.getString("userName");
-				String password = jsonObj.getString("password");
-				String sql = "select * from user where userName=? and password=?";
+				String mealId = jsonObj.getString("mealId");
+				String sql = "select * from meal where mealId= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
-				ps.setString(1, userName);
-				ps.setString(2, password);
+				ps.setString(1, mealId);
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
-				if(rs.next()){
-					jsonobj.put("success",true);
-					String token = UUID.randomUUID().toString().replace("-", "");
-					jsonobj.put("token",token);
-					Map<String,String> temp = (Map<String,String>)this.getServletContext().getAttribute("loginedUser");
-					temp.put(rs.getString("userId"), token);
-					this.getServletContext().setAttribute("loginedUser",temp);
+				while(rs.next()){
+					jsonobj.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
+					jsonobj.put("price",rs.getObject("price")==null?"":rs.getDouble("price"));
+					jsonobj.put("amount",rs.getObject("amount")==null?"":rs.getInt("amount"));
+					jsonobj.put("menuId",rs.getString("menuId")==null?"":rs.getString("menuId"));
+					jsonobj.put("type",rs.getString("type")==null?"":rs.getString("type"));
 				}
-				else {
-					jsonobj.put("success",false);
-					jsonobj.put("msg", "用户名或密码错误");
+				if(jsonobj.isEmpty()) {
+					jsonobj.put("success", false);
+					jsonobj.put("msg", "��ȡʧ��");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);

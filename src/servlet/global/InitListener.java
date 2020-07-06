@@ -18,7 +18,7 @@ public class InitListener implements ServletContextListener {
     @Override  
     public void contextInitialized(ServletContextEvent context) {
     	ServletContext sc = context.getServletContext();
-    	Map<String,String>registedUsers = new HashMap<String, String>();
-    	sc.setAttribute("registedUsers", registedUsers);
+    	Map<String,String>loginedUser = new HashMap<String, String>();
+    	sc.setAttribute("loginedUser", loginedUser);
     }  
 }
