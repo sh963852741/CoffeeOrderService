@@ -59,6 +59,7 @@ public class GetRoleList extends HttpServlet {
 				jsonarray.add(rs.getString("roleName"));
 			}
 			jsonobj.put("roles", jsonarray);
+			jsonobj.put("success",true);
 			out = response.getWriter();
 			out.println(jsonobj);
 			rs.close();

@@ -57,6 +57,7 @@ public class GetUserList extends HttpServlet {
 			ResultSet rs = stmt.executeQuery(sql);
 			JSONArray jsonarray = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
+			JSONObject jsonobj2 = new JSONObject();
 			while(rs.next()){
 				jsonobj.put("userName",rs.getString("userName"));
 				jsonobj.put("userId",rs.getString("userId"));
@@ -64,8 +65,10 @@ public class GetUserList extends HttpServlet {
 				jsonobj.put("email",rs.getString("email") == null ? "" : rs.getString("email"));
 				jsonarray.add(jsonobj);
 			}
+			jsonobj2.put("success",true);
+			jsonobj2.put("data", jsonarray);
 			out = response.getWriter();
-			out.println(jsonarray);
+			out.println(jsonobj2);
 			rs.close();
 			stmt.close();
 			conn.close();
