@@ -7,6 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
+
 import net.sf.json.JSONObject;
 
 import javax.servlet.ServletException;
@@ -78,8 +81,9 @@ public class Login extends HttpServlet {
 				JSONObject jsonobj = new JSONObject();
 				if(rs.next()){
 					jsonobj.put("success",true);
+					String userId = rs.getString("userId");
 					String sessionId = session.getId();
-					session.setAttribute("sessionId", sessionId);
+					session.setAttribute("userId", userId);
 					jsonobj.put("sessionId",sessionId);
 					
 				}
