@@ -82,6 +82,7 @@ public class AddMeal extends HttpServlet {
 		String menuId = jsonObj.getString("menuId");
 		String type = jsonObj.getString("type");
 		String mealName = jsonObj.getString("mealName");
+		String mealDetail = jsonObj.getString("mealDetail");
 		
 		Connection conn = null;
 		Statement stmt = null;
@@ -92,7 +93,7 @@ public class AddMeal extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* 构建SQL语句  */
-			String sql = "insert into meal(mealId, price, amount, menuId, type, mealName) values (?,?,?,?,?,?)";
+			String sql = "insert into meal(mealId, price, amount, menuId, type, mealName, mealDetail) values (?,?,?,?,?,?,?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
 			ps.setString(1, mealId.toString());
@@ -101,6 +102,7 @@ public class AddMeal extends HttpServlet {
 			ps.setString(4, menuId);
 			ps.setString(5, type);
 			ps.setString(6, mealName);
+			ps.setString(7, mealDetail);
 			
 			/* 执行SQL语句  */
 			ps.executeUpdate();

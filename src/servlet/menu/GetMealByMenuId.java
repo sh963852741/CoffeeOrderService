@@ -85,6 +85,7 @@ public class GetMealByMenuId extends HttpServlet {
 				rs2.close();
 				while(rs.next()){
 					jsonobj.put("mealId",rs.getString("mealId"));
+					jsonobj.put("mealDetail",rs.getString("mealDetail"));
 					jsonobj.put("mealName",rs.getString("mealName")==null?"":rs.getString("mealName"));
 					jsonobj.put("price",rs.getObject("price")==null?"":rs.getDouble("price"));
 					jsonobj.put("amount",rs.getObject("amount")==null?"":rs.getInt("amount"));
