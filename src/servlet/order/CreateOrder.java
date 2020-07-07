@@ -1,15 +1,13 @@
-ï»¿package servlet.menu;
+package servlet.order;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import java.util.UUID;
 
 import javax.servlet.ServletException;
@@ -21,43 +19,39 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
 
 /**
- * Servlet implementation class regist
+ * Servlet implementation class CreateOrder
  */
-@WebServlet("/api/menu/addMeal")
-public class AddMeal extends HttpServlet {
-	
+@WebServlet("/api/ordermanage/createOrder")
+public class CreateOrder extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public AddMeal() {
+    public CreateOrder() {
         super();
         // TODO Auto-generated constructor stub
-       
     }
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-    @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	response.setCharacterEncoding("UTF-8");
+		response.setCharacterEncoding("UTF-8");
     	response.setHeader("Allow", "POST");
     	response.sendError(405);
 	}
-    
+
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-    @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	/* è®¾ç½®å“åº”å¤´éƒ¨ */
+		/* ÉèÖÃÏìÓ¦Í·²¿ */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		
-		/* è¯»å–è¯·æ±‚å†…å®¹ */
+		/* ¶ÁÈ¡ÇëÇóÄÚÈİ */
 		request.setCharacterEncoding("UTF-8");
 		BufferedReader reader = request.getReader();
 		String msg = null;
@@ -67,32 +61,31 @@ public class AddMeal extends HttpServlet {
 		}		
 		String jsonStr = message.toString();
 		
-		/* å¤„ç†è¯·æ±‚å†…å®¹ä¸ºç©ºçš„æƒ…å†µ */
+		/* ´¦ÀíÇëÇóÄÚÈİÎª¿ÕµÄÇé¿ö */
 		if(jsonStr.isEmpty()) 
 		{
 			response.sendError(400);
 			return;
 		}
 		
-		/* è§£æJSONè·å–æ•°æ® */
+		/* ½âÎöJSON»ñÈ¡Êı¾İ */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
 		UUID mealId = UUID.randomUUID();
 		Double price = jsonObj.getDouble("price");
 		int amount = jsonObj.getInt("amount");
 		String menuId = jsonObj.getString("menuId");
 		String type = jsonObj.getString("type");
-		String mealName = jsonObj.getString("mealName");
 		
 		Connection conn = null;
 		Statement stmt = null;
 		try {
-			/* è¿æ¥æ•°æ®åº“ */
+			/* Á¬½ÓÊı¾İ¿â */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			stmt = conn.createStatement();
 			
-			/* æ„å»ºSQLè¯­å¥  */
-			String sql = "insert into meal(mealId, price, amount, menuId, type, mealName) values (?,?,?,?,?,?)";
+			/* ¹¹½¨SQLÓï¾ä  */
+			String sql = "insert into meal(mealId, price, amount, menuId, type) values (?,?,?,?,?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
 			ps.setString(1, mealId.toString());
@@ -100,19 +93,18 @@ public class AddMeal extends HttpServlet {
 			ps.setInt(3, amount);
 			ps.setString(4, menuId);
 			ps.setString(5, type);
-			ps.setString(6, mealName);
 			
-			/* æ‰§è¡ŒSQLè¯­å¥  */
+			/* Ö´ĞĞSQLÓï¾ä  */
 			ps.executeUpdate();
 			
-			/* å¤„ç†æ‰§è¡Œç»“æœ */
+			/* ´¦ÀíÖ´ĞĞ½á¹û */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success", true);
-			responseJson.put("msg","æ·»åŠ æˆåŠŸ");
+			responseJson.put("msg","Ìí¼Ó³É¹¦");
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			/* å¤„ç†æ‰§è¡Œç»“æœ */
+			/* ´¦ÀíÖ´ĞĞ½á¹û */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success",false);
 			responseJson.put("msg", e.getMessage());
@@ -125,7 +117,7 @@ public class AddMeal extends HttpServlet {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} finally {
-			/* æ— è®ºå¦‚ä½•å…³é—­è¿æ¥ */
+			/* ÎŞÂÛÈçºÎ¹Ø±ÕÁ¬½Ó */
 			try {
 				stmt.close();
 				conn.close();

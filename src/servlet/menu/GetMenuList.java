@@ -84,8 +84,9 @@ public class GetMenuList extends HttpServlet {
 				
 				JSONObject jsonobj = new JSONObject();
 				jsonobj.put("menuId",rs1.getString("menuId"));
+				jsonobj.put("active",rs1.getBoolean("active"));
 				jsonobj.put("type",rs1.getString("type") == null ? "" : rs1.getString("type"));
-				jsonobj.put("menuName",rs1.getString("menuName") == null? "" : rs1.getString("menuName"));
+				jsonobj.put("menuName",rs1.getString("menuName"));
 				jsonobj.put("mealCount",rs2.getString("count"));
 				jsonarray.add(jsonobj);
 				rs2.close();

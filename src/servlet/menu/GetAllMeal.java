@@ -64,6 +64,7 @@ public class GetAllMeal extends HttpServlet {
 				jsonobj.put("amount",rs.getObject("amount")==null?"":rs.getInt("amount"));
 				jsonobj.put("menuId",rs.getString("menuId")==null?"":rs.getString("menuId"));
 				jsonobj.put("type",rs.getString("type")==null?"":rs.getString("type"));
+				jsonobj.put("mealName",rs.getString("mealName")==null?"":rs.getString("mealName"));
 				jsonarray.add(jsonobj);
 			}
 			jsonobj2.put("success",true);

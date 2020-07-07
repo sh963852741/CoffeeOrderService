@@ -79,6 +79,7 @@ public class ModifyMeal extends HttpServlet {
 		int amount = jsonObj.getInt("amount");
 		String menuId = jsonObj.getString("menuId");
 		String type = jsonObj.getString("type");
+		String mealName = jsonObj.getString("mealName");
 		
 		Connection conn = null;
 		Statement stmt = null;
@@ -89,7 +90,7 @@ public class ModifyMeal extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* 构建SQL语句 */
-			String sql = "UPDATE meal SET price=? and amount=? and type=? and menuId=? WHERE mealId=? ";
+			String sql = "UPDATE meal SET price=? and amount=? and type=? and menuId=? and mealName=? WHERE mealId=? ";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
 			ps.setDouble(1, price);
@@ -97,6 +98,7 @@ public class ModifyMeal extends HttpServlet {
 			ps.setString(3, type);
 			ps.setString(4, menuId);
 			ps.setString(5, mealId);
+			ps.setString(6, mealName);
 			
 			/* 执行SQL语句 */
 			ps.executeUpdate();
