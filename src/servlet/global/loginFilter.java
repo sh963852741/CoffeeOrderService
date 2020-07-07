@@ -37,13 +37,12 @@ public class loginFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		// TODO Auto-generated method stub
 		// place your code here
-
 		// pass the request along the filter chain
 		HttpServletRequest req = (HttpServletRequest)request;
 		HttpSession session = req.getSession();
 		response.setContentType("text/json; charset=utf-8");
 		String uri = req.getRequestURI();
-		if(session.getAttribute("sessionId")==null && !uri.contains("/login")) {
+		if(session.getAttribute("userId")==null && !uri.contains("/login")) {
 			PrintWriter out = response.getWriter();
 			JSONObject jsonobj = new JSONObject();
 			jsonobj.put("success",false);
