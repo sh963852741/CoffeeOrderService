@@ -42,7 +42,7 @@ public class loginFilter implements Filter {
 		HttpSession session = req.getSession();
 		response.setContentType("text/json; charset=utf-8");
 		String uri = req.getRequestURI();
-		if(session.getAttribute("userId")==null && !uri.contains("/login")) {
+		if(session.getAttribute("userId")==null && !uri.contains("/login") && !uri.contains("/regist")) {
 			PrintWriter out = response.getWriter();
 			JSONObject jsonobj = new JSONObject();
 			jsonobj.put("success",false);
