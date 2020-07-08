@@ -93,7 +93,9 @@ public class GetMealBySort extends HttpServlet {
 				}
 			}
 			JSONObject jsonobj2 = new JSONObject();
-			jsonobj2.putAll(types2);
+			JSONObject jsonobj3 = new JSONObject();
+			jsonobj3.putAll(types2);
+			jsonobj2.put("data",jsonobj3);
 			jsonobj2.put("success",true);
 			out.println(jsonobj2);
 			out.close();
