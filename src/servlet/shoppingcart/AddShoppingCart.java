@@ -78,9 +78,8 @@ public class AddShoppingCart extends HttpServlet {
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
 		UUID mealId = UUID.randomUUID();
 		Double price = jsonObj.getDouble("price");
-		int amount = jsonObj.getInt("amount");
-		String menuId = jsonObj.getString("menuId");
-		String type = jsonObj.getString("type");
+		int quality = jsonObj.getInt("quality");
+		String userId = jsonObj.getString("userId");
 		
 		Connection conn = null;
 		Statement stmt = null;
@@ -91,14 +90,13 @@ public class AddShoppingCart extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* ¹¹½¨SQLÓï¾ä  */
-			String sql = "insert into meal(mealId, price, amount, menuId, type) values (?,?,?,?,?)";
+			String sql = "insert into user_meal(mealId, price, quality, userId) values (?,?,?,?)";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
 			ps.setString(1, mealId.toString());
 			ps.setDouble(2, price);
-			ps.setInt(3, amount);
-			ps.setString(4, menuId);
-			ps.setString(5, type);
+			ps.setInt(3, quality);
+			ps.setString(4, userId);
 			
 			/* Ö´ÐÐSQLÓï¾ä  */
 			ps.executeUpdate();
