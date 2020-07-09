@@ -22,14 +22,14 @@ import net.sf.json.JSONObject;
 /**
  * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/shoppingcart/addShoppingCart")
-public class AddShoppingCart extends HttpServlet {
+@WebServlet("/api/shoppingcart/decShoppingCart")
+public class DecShoppingCart extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public AddShoppingCart() {
+    public DecShoppingCart() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -68,44 +68,35 @@ public class AddShoppingCart extends HttpServlet {
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
 				String userId = jsonObj.getString("userId");
-				double price = jsonObj.getDouble("price");
 				String mealId = jsonObj.getString("mealId");
-				String sql = "select * from user_meal where mealId= ? and userId= ?";
+				String sql = "UPDATE user_meal SET quality=quality-1 WHERE mealId=? and userId=?";
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ps.setString(1, mealId);
 				ps.setString(2, userId);
-				
-				ResultSet rs = ps.executeQuery();
+				ps.executeUpdate();
 				JSONObject jsonobj = new JSONObject();
-				while(rs.next()){
-					String sql_next= "UPDATE user_meal SET quality=quality+1 WHERE mealId=? and userId=?";
-					PreparedStatement ps_next = conn.prepareStatement(sql_next);
-					ps_next.setString(1, mealId);
-					ps_next.setString(2, userId);
-					ps_next.executeUpdate();
-					JSONObject responseJson = new JSONObject();
-					responseJson.put("success", true);
-					responseJson.put("msg","添加成功");
-					out.println(responseJson);
-				}
-				if(jsonobj.isEmpty()) {
-					String sql_empty = "insert into user_meal(mealId,userId,price,quality) values (?,?,?,?)";
-					PreparedStatement ps_empty = conn.prepareStatement(sql_empty);
-					
-					ps_empty.setString(1, mealId);
-					ps_empty.setString(2, userId);
-					ps_empty.setDouble(3, price);
-					ps_empty.setInt(4,1);
-					
-					/* 执行SQL语句  */
-					ps_empty.executeUpdate();
-					JSONObject responseJson = new JSONObject();
-					responseJson.put("success", true);
-					responseJson.put("msg","添加成功");
-					out.println(responseJson);
-					
-				}
 				
+				String sql_q = "select * from user_meal where mealId= ? and userId= ?";
+				PreparedStatement ps_q = conn.prepareStatement(sql_q);
+				ps_q.setString(1, mealId);
+				ps_q.setString(2, userId);
+				ResultSet rs = ps_q.executeQuery();
+				while(rs.next())
+				{
+					int quality=rs.getInt("quality");
+					if(quality==0)
+					{
+						String sql_next= "delete from user_meal where mealId= ? and userId= ?";
+						PreparedStatement ps_next = conn.prepareStatement(sql_next);
+						ps_next.setString(1, mealId);
+						ps_next.setString(2, userId);
+						ps_next.executeUpdate();
+					}
+					JSONObject responseJson = new JSONObject();
+					responseJson.put("success", true);
+					responseJson.put("msg","删除成功");
+					out.println(responseJson);
+				}
 				out = response.getWriter();
 				out.println(jsonobj);
 				rs.close();
