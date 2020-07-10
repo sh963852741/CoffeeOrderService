@@ -16,7 +16,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -50,6 +52,7 @@ public class GetShoppingCart extends HttpServlet {
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
+		HttpSession session = request.getSession();
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
@@ -67,21 +70,29 @@ public class GetShoppingCart extends HttpServlet {
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
-				String userId = jsonObj.getString("userId");
+				String userId = (String)session.getAttribute("userId");
 				String sql = "select * from user_meal where userId= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ps.setString(1, userId);
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
+				JSONObject jsonobj2 = new JSONObject();
+				JSONArray  jsonarray = new JSONArray();
 				while(rs.next()){
-					jsonobj.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
-					jsonobj.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
-					jsonobj.put("quality",rs.getObject("quality")==null?"":rs.getInt("quality"));
-					jsonobj.put("price",rs.getObject("price")==null?"":rs.getInt("price"));
+					jsonobj2.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
+					jsonobj2.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
+					jsonobj2.put("quality",rs.getObject("quality")==null?"":rs.getInt("quality"));				
+					jsonobj2.put("price",rs.getObject("price")==null?"":rs.getInt("price"));
+					jsonarray.add(jsonobj2);
 				}
-				if(jsonobj.isEmpty()) {
+				if(jsonarray.isEmpty()) {
 					jsonobj.put("success", false);
-					jsonobj.put("msg", "��ȡʧ��");
+					jsonobj.put("msg", "为空，操作失败");
+				}
+				else {
+					jsonobj.put("success", true);
+					jsonobj.put("msg", "操作成功");
+					jsonobj.put("data",jsonarray);
 				}
 				out = response.getWriter();
 				out.println(jsonobj);

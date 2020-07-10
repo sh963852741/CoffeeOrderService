@@ -15,6 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 
@@ -50,12 +51,12 @@ public class ModifyShoppingCart extends HttpServlet {
 	 */
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	/* ÉèÖÃÏìÓ¦Í·²¿ */
+    	/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Í·ï¿½ï¿½ */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
-		
-		/* ¶ÁÈ¡ÇëÇóÄÚÈİ */
+		HttpSession session = request.getSession();
+		/* ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 		request.setCharacterEncoding("UTF-8");
 		BufferedReader reader = request.getReader();
 		String msg = null;
@@ -65,46 +66,45 @@ public class ModifyShoppingCart extends HttpServlet {
 		}		
 		String jsonStr = message.toString();
 		
-		/* ´¦ÀíÇëÇóÄÚÈİÎª¿ÕµÄÇé¿ö */
+		/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½Õµï¿½ï¿½ï¿½ï¿½ */
 		if(jsonStr.isEmpty()) 
 		{
 			response.sendError(400);
 			return;
 		}
 		
-		/* ½âÎöJSON»ñÈ¡Êı¾İ */
+		/* ï¿½ï¿½ï¿½ï¿½JSONï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
 		String mealId = jsonObj.getString("mealId");
-		String userId = jsonObj.getString("userId");
+		String userId = (String)session.getAttribute("userId");
 		int quality = jsonObj.getInt("quality");
 		
 		Connection conn = null;
 		Statement stmt = null;
 		try {
-			/* Á¬½ÓÊı¾İ¿â */
+			/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¿ï¿½ */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			stmt = conn.createStatement();
 			
-			/* ¹¹½¨SQLÓï¾ä */
-			String sql = "UPDATE user_meal SET mealId=? and quality=? WHERE userId=? ";
+			/* ï¿½ï¿½ï¿½ï¿½SQLï¿½ï¿½ï¿½ */
+			String sql = "UPDATE user_meal SET quality=? WHERE userId=? and mealId = ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 
-			ps.setString(1, mealId);
-			ps.setInt(2, quality);
-			ps.setString(3, userId);
-			
-			/* Ö´ĞĞSQLÓï¾ä */
+			ps.setInt(1, quality);
+			ps.setString(2, userId);
+			ps.setString(3, mealId);
+			/* Ö´ï¿½ï¿½SQLï¿½ï¿½ï¿½ */
 			ps.executeUpdate();
 			
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ğ½ï¿½ï¿½ */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success", true);
-			responseJson.put("msg","ĞŞ¸Ä³É¹¦");
+			responseJson.put("msg","ä¿®æ”¹æˆåŠŸ");
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			/* ´¦ÀíÖ´ĞĞ½á¹û */
+			/* ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ğ½ï¿½ï¿½ */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success",false);
 			responseJson.put("msg", e.getMessage());
@@ -117,7 +117,7 @@ public class ModifyShoppingCart extends HttpServlet {
 		} catch (ClassNotFoundException e) {
 			e.fillInStackTrace();
 		} finally {
-			/* ÎŞÂÛÈçºÎ¹Ø±ÕÁ¬½Ó */
+			/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¹Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ */
 			try {
 				stmt.close();
 				conn.close();
