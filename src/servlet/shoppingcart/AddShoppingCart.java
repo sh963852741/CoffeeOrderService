@@ -1,4 +1,4 @@
-package servlet.menu;
+package servlet.shoppingcart;
 
 
 import java.io.IOException;
@@ -22,14 +22,14 @@ import net.sf.json.JSONObject;
 /**
  * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/menu/getMeal")
-public class GetMeal extends HttpServlet {
+@WebServlet("/api/shoppingcart/addShoppingCart")
+public class AddShoppingCart extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public GetMeal() {
+    public AddShoppingCart() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -67,25 +67,45 @@ public class GetMeal extends HttpServlet {
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
+				String userId = jsonObj.getString("userId");
+				double price = jsonObj.getDouble("price");
 				String mealId = jsonObj.getString("mealId");
-				String sql = "select * from meal where mealId= ?";
+				String sql = "select * from user_meal where mealId= ? and userId= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ps.setString(1, mealId);
+				ps.setString(2, userId);
+				
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
 				while(rs.next()){
-					jsonobj.put("mealId",rs.getString("mealId"));
-					jsonobj.put("price",rs.getObject("price"));
-					jsonobj.put("amount",rs.getObject("amount"));
-					jsonobj.put("menuId",rs.getString("menuId"));
-					jsonobj.put("type",rs.getString("type"));
-					jsonobj.put("mealName",rs.getString("mealName"));
-					jsonobj.put("mealDetail",rs.getString("mealDetail"));
+					String sql_next= "UPDATE user_meal SET quality=quality+1 WHERE mealId=? and userId=?";
+					PreparedStatement ps_next = conn.prepareStatement(sql_next);
+					ps_next.setString(1, mealId);
+					ps_next.setString(2, userId);
+					ps_next.executeUpdate();
+					JSONObject responseJson = new JSONObject();
+					responseJson.put("success", true);
+					responseJson.put("msg","添加成功");
+					out.println(responseJson);
 				}
 				if(jsonobj.isEmpty()) {
-					jsonobj.put("success", false);
-					jsonobj.put("msg", "获取失败");
+					String sql_empty = "insert into user_meal(mealId,userId,price,quality) values (?,?,?,?)";
+					PreparedStatement ps_empty = conn.prepareStatement(sql_empty);
+					
+					ps_empty.setString(1, mealId);
+					ps_empty.setString(2, userId);
+					ps_empty.setDouble(3, price);
+					ps_empty.setInt(4,1);
+					
+					/* 执行SQL语句  */
+					ps_empty.executeUpdate();
+					JSONObject responseJson = new JSONObject();
+					responseJson.put("success", true);
+					responseJson.put("msg","添加成功");
+					out.println(responseJson);
+					
 				}
+				
 				out = response.getWriter();
 				out.println(jsonobj);
 				rs.close();

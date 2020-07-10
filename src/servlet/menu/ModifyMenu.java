@@ -77,6 +77,7 @@ public class ModifyMenu extends HttpServlet {
 		String menuId = jsonObj.getString("menuId");
 		String type = jsonObj.getString("type");
 		String menuName = jsonObj.getString("menuName");
+		Boolean active = jsonObj.getBoolean("active");
 		
 		Connection conn = null;
 		Statement stmt = null;
@@ -87,12 +88,13 @@ public class ModifyMenu extends HttpServlet {
 			stmt = conn.createStatement();
 			
 			/* 构建SQL语句  */
-			String sql = "UPDATE menu SET menuName=? and type=? WHERE menuId=? ";
+			String sql = "UPDATE menu SET menuName=? and type=? and active=? WHERE menuId=? ";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
 			ps.setString(1, menuName);
 			ps.setString(2, type);
 			ps.setString(3, menuId);
+			ps.setBoolean(4, active);
 			
 			/* 执行SQL语句  */
 			ps.executeUpdate();

@@ -1,4 +1,4 @@
-package servlet.menu;
+package servlet.shoppingcart;
 
 
 import java.io.IOException;
@@ -22,14 +22,14 @@ import net.sf.json.JSONObject;
 /**
  * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/menu/getMeal")
-public class GetMeal extends HttpServlet {
+@WebServlet("/api/shoppingcart/getShoppingCartAllprice")
+public class GetShoppingCartAllPrice extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public GetMeal() {
+    public GetShoppingCartAllPrice() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -67,20 +67,14 @@ public class GetMeal extends HttpServlet {
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
-				String mealId = jsonObj.getString("mealId");
-				String sql = "select * from meal where mealId= ?";
+				String userId = jsonObj.getString("userId");
+				String sql = "select sum(quality*price) as allPrice from user_meal where userId= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
-				ps.setString(1, mealId);
+				ps.setString(1, userId);
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
 				while(rs.next()){
-					jsonobj.put("mealId",rs.getString("mealId"));
-					jsonobj.put("price",rs.getObject("price"));
-					jsonobj.put("amount",rs.getObject("amount"));
-					jsonobj.put("menuId",rs.getString("menuId"));
-					jsonobj.put("type",rs.getString("type"));
-					jsonobj.put("mealName",rs.getString("mealName"));
-					jsonobj.put("mealDetail",rs.getString("mealDetail"));
+					jsonobj.put("allPrice",rs.getDouble("allPrice")==0?"":rs.getDouble("allPrice"));
 				}
 				if(jsonobj.isEmpty()) {
 					jsonobj.put("success", false);

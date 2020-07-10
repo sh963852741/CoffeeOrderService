@@ -1,12 +1,12 @@
-package servlet.menu;
+package servlet.shoppingcart;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -16,21 +16,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
  * Servlet implementation class regist
  */
-@WebServlet("/api/menu/getMenuList")
-public class GetMenuList extends HttpServlet {
+@WebServlet("/api/shoppingcart/modifyShoppingCart")
+public class ModifyShoppingCart extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public GetMenuList() {
+    public ModifyShoppingCart() {
         super();
         // TODO Auto-generated constructor stub
        
@@ -41,7 +40,9 @@ public class GetMenuList extends HttpServlet {
 	 */
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	doPost(request, response);
+    	response.setCharacterEncoding("UTF-8");
+    	response.setHeader("Allow", "POST");
+    	response.sendError(405);
 	}
     
 	/**
@@ -49,57 +50,61 @@ public class GetMenuList extends HttpServlet {
 	 */
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	/* è®¾ç½®å“åº”å¤´éƒ¨ */
+    	/* ÉèÖÃÏìÓ¦Í·²¿ */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
-			
+		
+		/* ¶ÁÈ¡ÇëÇóÄÚÈİ */
+		request.setCharacterEncoding("UTF-8");
+		BufferedReader reader = request.getReader();
+		String msg = null;
+		StringBuilder message= new StringBuilder();
+		while ((msg = reader.readLine()) != null){			
+			message.append(msg);
+		}		
+		String jsonStr = message.toString();
+		
+		/* ´¦ÀíÇëÇóÄÚÈİÎª¿ÕµÄÇé¿ö */
+		if(jsonStr.isEmpty()) 
+		{
+			response.sendError(400);
+			return;
+		}
+		
+		/* ½âÎöJSON»ñÈ¡Êı¾İ */
+		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
+		String mealId = jsonObj.getString("mealId");
+		String userId = jsonObj.getString("userId");
+		int quality = jsonObj.getInt("quality");
+		
 		Connection conn = null;
 		Statement stmt = null;
 		try {
-			/* è¿æ¥æ•°æ®åº“ */
+			/* Á¬½ÓÊı¾İ¿â */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			stmt = conn.createStatement();
 			
-			/* æ„å»ºSQLè¯­å¥  */
-			String sql1 = "select * from menu;";
-			PreparedStatement ps1 = conn.prepareStatement(sql1);
-			String sql2 = "Select count(*) as count From meal "
-					+ "Where exists (Select * from menu Where meal.menuId = ?);";
-			PreparedStatement ps2 = conn.prepareStatement(sql2);
+			/* ¹¹½¨SQLÓï¾ä */
+			String sql = "UPDATE user_meal SET mealId=? and quality=? WHERE userId=? ";
+			PreparedStatement ps = conn.prepareStatement(sql);
+
+			ps.setString(1, mealId);
+			ps.setInt(2, quality);
+			ps.setString(3, userId);
 			
+			/* Ö´ĞĞSQLÓï¾ä */
+			ps.executeUpdate();
 			
-			/* æ‰§è¡ŒSQLè¯­å¥  */
-			ResultSet rs1 = ps1.executeQuery();
-			
-			/* å¤„ç†æ‰§è¡Œç»“æœ */
+			/* ´¦ÀíÖ´ĞĞ½á¹û */
 			JSONObject responseJson = new JSONObject();
-			JSONArray jsonarray = new JSONArray();
-			while(rs1.next()){
-				/* æŸ¥è¯¢é¤ç‚¹æ•° */
-				ps2.setString(1, rs1.getString("menuId"));
-				ResultSet rs2 = ps2.executeQuery();
-				rs2.next();
-				
-				JSONObject jsonobj = new JSONObject();
-				jsonobj.put("menuId",rs1.getString("menuId"));
-				jsonobj.put("active",rs1.getBoolean("active"));
-				jsonobj.put("type",rs1.getString("type") == null ? "" : rs1.getString("type"));
-				jsonobj.put("menuName",rs1.getString("menuName"));
-				jsonobj.put("mealCount",rs2.getString("count"));
-				jsonarray.add(jsonobj);
-				rs2.close();
-			}
-			rs1.close();
-			
 			responseJson.put("success", true);
-			responseJson.put("msg","");
-			responseJson.put("data", jsonarray);
+			responseJson.put("msg","ĞŞ¸Ä³É¹¦");
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			/* å¤„ç†æ‰§è¡Œç»“æœ */
+			/* ´¦ÀíÖ´ĞĞ½á¹û */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success",false);
 			responseJson.put("msg", e.getMessage());
@@ -112,7 +117,7 @@ public class GetMenuList extends HttpServlet {
 		} catch (ClassNotFoundException e) {
 			e.fillInStackTrace();
 		} finally {
-			/* æ— è®ºå¦‚ä½•å…³é—­è¿æ¥ */
+			/* ÎŞÂÛÈçºÎ¹Ø±ÕÁ¬½Ó */
 			try {
 				stmt.close();
 				conn.close();
@@ -121,5 +126,4 @@ public class GetMenuList extends HttpServlet {
 			}
 		}	
 	}
-
 }
