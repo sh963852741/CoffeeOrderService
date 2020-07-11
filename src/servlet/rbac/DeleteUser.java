@@ -15,6 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 
@@ -72,20 +73,20 @@ public class DeleteUser extends HttpServlet {
 			String sql = "delete from user where userId= ?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1, userId);
+			JSONObject jsonobj = new JSONObject();
 			try {
 				ps.executeUpdate();
 			}
 			catch(Exception e) {
 				error = 1;
+				jsonobj.put("msg",e.getMessage());
 			}
-			JSONObject jsonobj = new JSONObject();
 			if(error == 1) {
 				jsonobj.put("success", false);
-				jsonobj.put("msg","userId可能不存在?");
 			}
 			else {
 				jsonobj.put("success",true);
-				jsonobj.put("msg","");
+				jsonobj.put("msg","删除成功");
 			}				
 			out = response.getWriter();
 			out.println(jsonobj);

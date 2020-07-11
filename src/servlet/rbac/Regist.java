@@ -98,7 +98,7 @@ public class Regist extends HttpServlet {
 			catch(Exception e) {
 				JSONObject jsonobj = new JSONObject();
 				jsonobj.put("success",false);
-				jsonobj.put("msg","操作错误,用户可能已经注册");
+				jsonobj.put("msg",e.getMessage());
 				out = response.getWriter();
 				out.println(jsonobj);
 				stmt.close();
