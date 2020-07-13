@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -69,23 +70,40 @@ public class GetMealByMenuId extends HttpServlet {
 				JSONObject jsonObj = JSONObject.fromObject(str);
 				String menuId = jsonObj.getString("menuId");
 				String sql = "select * from meal where menuId= ?";
+				String sql2 = "select menuName from menu where menuId= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
+				PreparedStatement ps2 = conn.prepareStatement(sql2);
 				ps.setString(1, menuId);
+				ps2.setString(1, menuId);
+				ResultSet rs2 = ps2.executeQuery();
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
+				JSONObject jsonobj2 = new JSONObject();
+				JSONArray jsonarray = new JSONArray();
+				rs2.next();
+				jsonobj2.put("menuName",rs2.getString("menuName")==null?"":rs2.getString("menuName"));
+				rs2.close();
 				while(rs.next()){
-					jsonobj.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
+					jsonobj.put("mealId",rs.getString("mealId"));
+					jsonobj.put("mealDetail",rs.getString("mealDetail"));
+					jsonobj.put("mealName",rs.getString("mealName")==null?"":rs.getString("mealName"));
 					jsonobj.put("price",rs.getObject("price")==null?"":rs.getDouble("price"));
 					jsonobj.put("amount",rs.getObject("amount")==null?"":rs.getInt("amount"));
-					jsonobj.put("menuId",rs.getString("menuId")==null?"":rs.getString("menuId"));
+					jsonobj.put("menuId",rs.getString("menuId"));
 					jsonobj.put("type",rs.getString("type")==null?"":rs.getString("type"));
+					jsonarray.add(jsonobj);
 				}
 				if(jsonobj.isEmpty()) {
-					jsonobj.put("success", false);
-					jsonobj.put("msg", "��ȡʧ��");
+					jsonobj2.put("success", false);
+					jsonobj2.put("msg", "获取失败");
 				}
+				else {
+					jsonobj2.put("success", true);
+					jsonobj2.put("msg", "获取成功");
+				}
+				jsonobj2.put("data",jsonarray);
 				out = response.getWriter();
-				out.println(jsonobj);
+				out.println(jsonobj2);
 				rs.close();
 				stmt.close();
 				conn.close();

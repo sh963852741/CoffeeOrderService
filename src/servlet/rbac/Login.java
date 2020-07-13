@@ -1,4 +1,4 @@
-package servlet.rbac;
+﻿package servlet.rbac;
 
 import java.io.*;
 import java.sql.Connection;
@@ -9,16 +9,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+
 import net.sf.json.JSONObject;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  * Servlet implementation class login
@@ -27,12 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 public class Login extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		super.init(config);
-		Map<String,String>userTokenMap = new HashMap<String, String>();
-		this.getServletContext().setAttribute("userTokenMap", userTokenMap);
-	}
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -45,7 +39,6 @@ public class Login extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
 		response.setCharacterEncoding("UTF-8");
     	response.setHeader("Allow", "POST");
     	response.sendError(405);
@@ -59,6 +52,7 @@ public class Login extends HttpServlet {
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
+		HttpSession session = request.getSession();
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
@@ -86,15 +80,15 @@ public class Login extends HttpServlet {
 				JSONObject jsonobj = new JSONObject();
 				if(rs.next()){
 					jsonobj.put("success",true);
-					String token = UUID.randomUUID().toString().replace("-", "");
-					jsonobj.put("token",token);
-					Map<String,String> temp = (Map<String,String>)this.getServletContext().getAttribute("userTokenMap");
-					temp.put(rs.getString("userId"), token);
-					this.getServletContext().setAttribute("userTokenMap",temp);
+					String userId = rs.getString("userId");
+					String sessionId = session.getId();
+					session.setAttribute("userId", userId);
+					jsonobj.put("sessionId",sessionId);
+					
 				}
 				else {
 					jsonobj.put("success",false);
-					jsonobj.put("msg","用户名或密码错误");
+					jsonobj.put("msg", "用户名或密码错误");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);

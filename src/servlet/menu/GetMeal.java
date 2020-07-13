@@ -74,11 +74,13 @@ public class GetMeal extends HttpServlet {
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
 				while(rs.next()){
-					jsonobj.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
-					jsonobj.put("price",rs.getObject("price")==null?"":rs.getDouble("price"));
-					jsonobj.put("amount",rs.getObject("amount")==null?"":rs.getInt("amount"));
-					jsonobj.put("menuId",rs.getString("menuId")==null?"":rs.getString("menuId"));
-					jsonobj.put("type",rs.getString("type")==null?"":rs.getString("type"));
+					jsonobj.put("mealId",rs.getString("mealId"));
+					jsonobj.put("price",rs.getObject("price"));
+					jsonobj.put("amount",rs.getObject("amount"));
+					jsonobj.put("menuId",rs.getString("menuId"));
+					jsonobj.put("type",rs.getString("type"));
+					jsonobj.put("mealName",rs.getString("mealName"));
+					jsonobj.put("mealDetail",rs.getString("mealDetail"));
 				}
 				if(jsonobj.isEmpty()) {
 					jsonobj.put("success", false);

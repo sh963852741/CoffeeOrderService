@@ -57,16 +57,21 @@ public class GetAllMeal extends HttpServlet {
 			ResultSet rs = stmt.executeQuery(sql);
 			JSONArray jsonarray = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
+			JSONObject jsonobj2 = new JSONObject();
 			while(rs.next()){
-				jsonobj.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
+				jsonobj.put("mealId",rs.getString("mealId"));
 				jsonobj.put("price",rs.getObject("price")==null?"":rs.getDouble("price"));
 				jsonobj.put("amount",rs.getObject("amount")==null?"":rs.getInt("amount"));
 				jsonobj.put("menuId",rs.getString("menuId")==null?"":rs.getString("menuId"));
 				jsonobj.put("type",rs.getString("type")==null?"":rs.getString("type"));
+				jsonobj.put("mealName",rs.getString("mealName")==null?"":rs.getString("mealName"));
+				jsonobj.put("mealDetail",rs.getString("mealDetail"));
 				jsonarray.add(jsonobj);
 			}
+			jsonobj2.put("success",true);
+			jsonobj2.put("data",jsonarray);
 			out = response.getWriter();
-			out.println(jsonarray);
+			out.println(jsonobj2);
 			rs.close();
 			stmt.close();
 			conn.close();

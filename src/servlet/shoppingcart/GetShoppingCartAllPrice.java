@@ -16,6 +16,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 
@@ -50,6 +51,7 @@ public class GetShoppingCartAllPrice extends HttpServlet {
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
+		HttpSession session = request.getSession();
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
@@ -67,7 +69,7 @@ public class GetShoppingCartAllPrice extends HttpServlet {
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
-				String userId = jsonObj.getString("userId");
+				String userId = (String) session.getAttribute("userId");
 				String sql = "select sum(quality*price) as allPrice from user_meal where userId= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ps.setString(1, userId);
@@ -78,7 +80,7 @@ public class GetShoppingCartAllPrice extends HttpServlet {
 				}
 				if(jsonobj.isEmpty()) {
 					jsonobj.put("success", false);
-					jsonobj.put("msg", "ªÒ»° ß∞‹");
+					jsonobj.put("msg", "Êìç‰ΩúÂ§±Ë¥•");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);

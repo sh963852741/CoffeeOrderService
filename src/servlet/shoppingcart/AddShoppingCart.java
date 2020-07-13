@@ -16,6 +16,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 
@@ -49,6 +50,7 @@ public class AddShoppingCart extends HttpServlet {
 		// TODO Auto-generated method stub
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
+		HttpSession session = request.getSession();
 		Connection conn = null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
@@ -67,7 +69,7 @@ public class AddShoppingCart extends HttpServlet {
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
 				JSONObject jsonObj = JSONObject.fromObject(str);
-				String userId = jsonObj.getString("userId");
+				String userId = (String) session.getAttribute("userId");
 				double price = jsonObj.getDouble("price");
 				String mealId = jsonObj.getString("mealId");
 				String sql = "select * from user_meal where mealId= ? and userId= ?";
@@ -77,7 +79,7 @@ public class AddShoppingCart extends HttpServlet {
 				
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
-				while(rs.next()){
+				if(rs.next()){
 					String sql_next= "UPDATE user_meal SET quality=quality+1 WHERE mealId=? and userId=?";
 					PreparedStatement ps_next = conn.prepareStatement(sql_next);
 					ps_next.setString(1, mealId);
@@ -85,8 +87,9 @@ public class AddShoppingCart extends HttpServlet {
 					ps_next.executeUpdate();
 					JSONObject responseJson = new JSONObject();
 					responseJson.put("success", true);
-					responseJson.put("msg","ÃÌº”≥…π¶");
+					responseJson.put("msg","‰øÆÊîπÊàêÂäü");
 					out.println(responseJson);
+					jsonobj.put("Âç†‰ΩçÁ¨¶","123");
 				}
 				if(jsonobj.isEmpty()) {
 					String sql_empty = "insert into user_meal(mealId,userId,price,quality) values (?,?,?,?)";
@@ -97,17 +100,14 @@ public class AddShoppingCart extends HttpServlet {
 					ps_empty.setDouble(3, price);
 					ps_empty.setInt(4,1);
 					
-					/* ÷¥––SQL”Ôæ‰  */
+					/* ÷¥ÔøΩÔøΩSQLÔøΩÔøΩÔøΩ  */
 					ps_empty.executeUpdate();
 					JSONObject responseJson = new JSONObject();
 					responseJson.put("success", true);
-					responseJson.put("msg","ÃÌº”≥…π¶");
+					responseJson.put("msg","Êñ∞Â¢ûÊàêÂäü");
 					out.println(responseJson);
 					
 				}
-				
-				out = response.getWriter();
-				out.println(jsonobj);
 				rs.close();
 				stmt.close();
 				conn.close();

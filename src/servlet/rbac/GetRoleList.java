@@ -1,4 +1,4 @@
-package servlet.rbac;
+﻿package servlet.rbac;
 
 
 import java.io.IOException;
@@ -37,7 +37,6 @@ public class GetRoleList extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
 		doPost(request,response);
 	}
 
@@ -45,7 +44,6 @@ public class GetRoleList extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
@@ -61,6 +59,7 @@ public class GetRoleList extends HttpServlet {
 				jsonarray.add(rs.getString("roleName"));
 			}
 			jsonobj.put("roles", jsonarray);
+			jsonobj.put("success",true);
 			out = response.getWriter();
 			out.println(jsonobj);
 			rs.close();

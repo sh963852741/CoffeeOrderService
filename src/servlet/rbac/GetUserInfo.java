@@ -10,12 +10,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -74,8 +76,19 @@ public class GetUserInfo extends HttpServlet {
 		
 		/* 解析JSON获取数据 */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
-		String userId = jsonObj.getString("userId");
-		
+		String userId = "";
+		try {
+			userId = jsonObj.getString("userId");
+		}
+		catch(Exception e) {
+			userId = null;
+		}
+		if(userId==null) {
+			userId = "";
+			HttpServletRequest req = (HttpServletRequest)request;
+			HttpSession session = req.getSession();
+			userId = (String) session.getAttribute("userId");
+		}
 		Connection conn = null;
 		Statement stmt = null;
 		try {
