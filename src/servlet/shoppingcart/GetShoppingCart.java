@@ -79,11 +79,19 @@ public class GetShoppingCart extends HttpServlet {
 				JSONObject jsonobj2 = new JSONObject();
 				JSONArray  jsonarray = new JSONArray();
 				while(rs.next()){
-					jsonobj2.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
-					jsonobj2.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
-					jsonobj2.put("quality",rs.getObject("quality")==null?"":rs.getInt("quality"));				
-					jsonobj2.put("price",rs.getObject("price")==null?"":rs.getInt("price"));
-					jsonarray.add(jsonobj2);
+					String sql_next = "select * from meal where mealId= ?";
+					PreparedStatement ps_next = conn.prepareStatement(sql_next);
+					ps_next.setString(1,rs.getString("mealId"));
+					ResultSet rs_next = ps_next.executeQuery();
+					while(rs_next.next())
+					{
+						jsonobj2.put("mealName",rs_next.getString("mealName")==null?"":rs_next.getString("mealName"));
+						jsonobj2.put("mealId",rs.getString("mealId")==null?"":rs.getString("mealId"));
+						jsonobj2.put("userId",rs.getString("userId")==null?"":rs.getString("userId"));
+						jsonobj2.put("quality",rs.getObject("quality")==null?"":rs.getInt("quality"));				
+						jsonobj2.put("price",rs.getObject("price")==null?"":rs.getInt("price"));
+						jsonarray.add(jsonobj2);
+					}
 				}
 				if(jsonarray.isEmpty()) {
 					jsonobj.put("success", false);
