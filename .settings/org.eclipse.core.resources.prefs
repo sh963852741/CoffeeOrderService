@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//src/servlet/menu/DownLoadImg.java=UTF-8
 encoding//src/servlet/menu/GetMealByMenuId.java=UTF-8
 encoding//src/servlet/menu/GetMenuList.java=UTF-8
 encoding//src/servlet/rbac/GetUserInfo.java=UTF-8
