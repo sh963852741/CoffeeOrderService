@@ -1,5 +1,6 @@
 package servlet.menu;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -61,8 +62,9 @@ public class UpLoadImg extends HttpServlet {
 		Part part=request.getPart("file");
 		String realFileName = part.getSubmittedFileName();
 		String type = realFileName.substring(realFileName.lastIndexOf("."));			
-		String fileName = UUID.randomUUID().toString()+type;
-		String path=getServletContext().getRealPath("/MenuImage/") + fileName;
+		String fileName = UUID.randomUUID().toString() + type;
+		String path=getServletContext().getRealPath("/");
+		path += ".." + File.separator + "Attachment" + File.separator + "MenuImage" + File.separator + fileName;
 		part.write(path);
 		
 		Connection conn = null;
