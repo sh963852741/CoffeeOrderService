@@ -19,16 +19,16 @@ import net.sf.json.JSONObject;
 import net.sf.json.JSONArray;
 
 /**
- * Servlet implementation class FinishOrder
+ * Servlet implementation class GetOrderListByUserId
  */
-@WebServlet("/FinishOrder")
-public class FinishOrder extends HttpServlet {
+@WebServlet("/GetOrderListByUserId")
+public class GetOrderListByUserId extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public FinishOrder() {
+    public GetOrderListByUserId() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -66,26 +66,17 @@ public class FinishOrder extends HttpServlet {
 				}
 				String str=new String(bytes,0,nTotalRead,"utf-8");
 				JSONObject jsonObj=JSONObject.fromObject(str);
-				String orderId=jsonObj.getString("orderId");
-				String sql="select * from orders where orderId= ?";
-				String sql2="select * from meal_order where orderId= ?";
+				String userId=jsonObj.getString("userId");
+				String sql="select * from orders where userId= ?";
 				PreparedStatement ps=conn.prepareStatement(sql);
-				PreparedStatement ps2=conn.prepareStatement(sql2);
-				ps.setString(1,orderId);
-				ps2.setString(1, orderId);
+				ps.setString(1,userId);
 				ResultSet rs=ps.executeQuery();
-				ResultSet rs2=ps2.executeQuery();
 				JSONObject jsonobj=new JSONObject();
 				JSONObject jsonobj2=new JSONObject();
 				JSONArray jsonarray = new JSONArray();
-				rs.next();
-				jsonobj.put("orderId",rs.getString("orderId"));
-				jsonobj.put("userId",rs.getString("userId"));
-				jsonobj.put("createdTime",rs.getString("createdTime"));
-				rs.close();
-				while(rs2.next()) {
-					jsonobj2.put("mealId",rs2.getString("mealId"));
-					jsonobj2.put("amount",rs2.getString("amount"));
+				while(rs.next()) {
+					jsonobj2.put("orderId",rs.getString("orderId"));
+					jsonobj2.put("createdTime",rs.getString("createdTime"));
 					jsonarray.add(jsonobj2);
 				}
 				if(jsonobj2.isEmpty()) {
