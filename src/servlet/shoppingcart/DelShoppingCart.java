@@ -1,4 +1,4 @@
-﻿package servlet.menu;
+package servlet.shoppingcart;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,28 +10,27 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import java.util.UUID;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 
 /**
  * Servlet implementation class regist
  */
-@WebServlet("/api/menu/addMeal")
-public class AddMeal extends HttpServlet {
+@WebServlet("/api/shoppingcart/delShoppingCart")
+public class DelShoppingCart extends HttpServlet {
 	
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public AddMeal() {
+    public DelShoppingCart() {
         super();
         // TODO Auto-generated constructor stub
        
@@ -52,12 +51,12 @@ public class AddMeal extends HttpServlet {
 	 */
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	/* 设置响应头部 */
+    	/* ������Ӧͷ�� */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
-		
-		/* 读取请求内容 */
+		HttpSession session = request.getSession();
+		/* ��ȡ�������� */
 		request.setCharacterEncoding("UTF-8");
 		BufferedReader reader = request.getReader();
 		String msg = null;
@@ -67,55 +66,44 @@ public class AddMeal extends HttpServlet {
 		}		
 		String jsonStr = message.toString();
 		
-		/* 处理请求内容为空的情况 */
+		/* ������������Ϊ�յ���� */
 		if(jsonStr.isEmpty()) 
 		{
 			response.sendError(400);
 			return;
 		}
 		
-		/* 解析JSON获取数据 */
+		/* ����JSON��ȡ���� */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
-		UUID mealId = UUID.randomUUID();
-		Double price = jsonObj.getDouble("price");
-		int amount = jsonObj.getInt("amount");
-		String menuId = jsonObj.getString("menuId");
-		String type = jsonObj.getString("type");
-		String mealName = jsonObj.getString("mealName");
-		String mealDetail = jsonObj.getString("mealDetail");
-		
+		String mealId = jsonObj.getString("mealId");
+		String userId = (String) session.getAttribute("userId");
 		Connection conn = null;
 		Statement stmt = null;
 		try {
-			/* 连接数据库 */
+			/* �������ݿ� */
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
+			conn = DriverManager.getConnection
+				("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT", "coffee", "TklRpGi1");
 			stmt = conn.createStatement();
 			
-			/* 构建SQL语句  */
-			String sql = "insert into meal(mealId, price, amount, menuId, type, mealName, mealDetail) values (?,?,?,?,?,?,?)";
+			/* ����SQL���  */
+			String sql = "delete from user_meal where mealId=? and userId=?";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			
-			ps.setString(1, mealId.toString());
-			ps.setDouble(2, price);
-			ps.setInt(3, amount);
-			ps.setString(4, menuId);
-			ps.setString(5, type);
-			ps.setString(6, mealName);
-			ps.setString(7, mealDetail);
+			ps.setString(1, mealId);
+			ps.setString(2, userId);
 			
-			/* 执行SQL语句  */
+			/* ִ��SQL���  */
 			ps.executeUpdate();
 			
-			/* 处理执行结果 */
+			/* ����ִ�н�� */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success", true);
-			responseJson.put("msg","添加成功");
-			responseJson.put("mealId", mealId.toString());
+			responseJson.put("msg","操作成功");
 			out.println(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
-			/* 处理执行结果 */
+			/* ����ִ�н�� */
 			JSONObject responseJson = new JSONObject();
 			responseJson.put("success",false);
 			responseJson.put("msg", e.getMessage());
@@ -126,9 +114,9 @@ public class AddMeal extends HttpServlet {
 				e1.printStackTrace();
 			}
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			e.fillInStackTrace();
 		} finally {
-			/* 无论如何关闭连接 */
+			/* ������ιر����� */
 			try {
 				stmt.close();
 				conn.close();
@@ -137,5 +125,4 @@ public class AddMeal extends HttpServlet {
 			}
 		}	
 	}
-
 }
