@@ -1,10 +1,6 @@
 package servlet.global;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -21,7 +17,8 @@ public class InitListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent context) {
     	//ServletContext sc = context.getServletContext();
     	
-    	String mealImgSavePath=context.getServletContext().getRealPath("/MenuImage/");
+    	String mealImgSavePath=context.getServletContext().getRealPath("/");
+    	mealImgSavePath += ".." + File.separator + "Attachment" + File.separator + "MenuImage" + File.separator;
     	File savefloder = new File(mealImgSavePath);
         if (!savefloder.exists()) {
         	savefloder.mkdir();

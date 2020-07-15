@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
@@ -15,20 +16,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONObject;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
- * Servlet implementation class FinishOrder
+ * Servlet implementation class GetOrderList
  */
-@WebServlet("/api/ordermanage/finishOrder")
-public class FinishOrder extends HttpServlet {
+@WebServlet("/api/ordermanage/getOrderList")
+public class GetOrderList extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public FinishOrder() {
+    public GetOrderList() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -55,46 +56,50 @@ public class FinishOrder extends HttpServlet {
 			Statement stmt=conn.createStatement();
 			ServletInputStream is;
 			try {
-				is=request.getInputStream();
-				int nRead=1;
-				int nTotalRead=0;
-				byte[] bytes=new byte[10240];
-				while(nRead>0) {
-					nRead=is.read(bytes,nTotalRead,bytes.length-nTotalRead);
-					if(nRead>0)
-						nTotalRead+=nRead;
-				}
-				String str=new String(bytes,0,nTotalRead,"utf-8");
-				JSONObject jsonObj=JSONObject.fromObject(str);
-				String orderId=jsonObj.getString("orderId");
-				String sql="select * from orders where orderId= ?";
-				String sql2="select * from meal_order where orderId= ?";
+				String sql="select * from orders";
+				String sql2 = "select userName from user where userId=?";
+				String sql3 = "select mealId, amount from meal_order where orderId=?";
+				String sql4 = "select mealName from meal where mealId=?";
 				PreparedStatement ps=conn.prepareStatement(sql);
-				PreparedStatement ps2=conn.prepareStatement(sql2);
-				ps.setString(1,orderId);
-				ps2.setString(1, orderId);
 				ResultSet rs=ps.executeQuery();
-				ResultSet rs2=ps2.executeQuery();
 				JSONObject jsonobj=new JSONObject();
 				JSONObject jsonobj2=new JSONObject();
 				JSONArray jsonarray = new JSONArray();
-				rs.next();
-				jsonobj.put("orderId",rs.getString("orderId"));
-				jsonobj.put("userId",rs.getString("userId"));
-				jsonobj.put("createdTime",rs.getString("createdTime"));
-				rs.close();
-				while(rs2.next()) {
-					jsonobj2.put("mealId",rs2.getString("mealId"));
-					jsonobj2.put("amount",rs2.getString("amount"));
+				while(rs.next()) {
+					String userId = rs.getString("userId");
+					String orderId = rs.getString("orderId");
+					PreparedStatement ps2=conn.prepareStatement(sql2);
+					ps2.setString(1, userId);
+					ResultSet rs2=ps2.executeQuery();
+					rs2.next();
+					jsonobj2.put("userName",rs2.getString("userName"));
+					jsonobj2.put("createdTime",rs.getString("createdTime"));
+					JSONArray jsonarray2 = new JSONArray();
+					PreparedStatement ps3=conn.prepareStatement(sql3);
+					ps3.setString(1, orderId);
+					ResultSet rs3=ps3.executeQuery();
+					int totalAmount = 0;
+					while(rs3.next()) {
+						JSONObject jsonobj3 = new JSONObject();
+						String mealId = rs3.getString("mealId");
+						int amount = rs3.getInt("amount");
+						totalAmount+=amount;
+						PreparedStatement ps4=conn.prepareStatement(sql4);
+						ps4.setString(1, mealId);
+						ResultSet rs4=ps4.executeQuery();
+						rs4.next();
+						String mealName = rs4.getString("mealName");
+						jsonobj3.put("amount", amount);
+						jsonobj3.put("mealName", mealName);
+						jsonarray2.add(jsonobj3);
+					}
+					jsonobj2.put("totalAmount", totalAmount);
+					jsonobj2.put("Orders", jsonarray2);
 					jsonarray.add(jsonobj2);
+					totalAmount = 0;
 				}
-				if(jsonobj2.isEmpty()) {
-					jsonobj.put("success",false);
-					jsonobj.put("msg","获取失败");
-				}else {
-					jsonobj.put("success",true);
-					jsonobj.put("msg","获取成功");
-				}
+				jsonobj.put("success",true);
+				jsonobj.put("msg","鎿嶄綔鎴愬姛");
 				jsonobj.put("data",jsonarray);
 				out=response.getWriter();
 				out.println(jsonobj);
