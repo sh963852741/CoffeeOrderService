@@ -21,7 +21,7 @@ import net.sf.json.JSONArray;
 /**
  * Servlet implementation class FinishOrder
  */
-@WebServlet("/FinishOrder")
+@WebServlet("/api/ordermanage/finishOrder")
 public class FinishOrder extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
