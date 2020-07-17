@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.servlet.ServletException;
@@ -15,20 +14,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * Servlet implementation class GetRolePrivilege
+ * Servlet implementation class DeletRoleList
  */
-@WebServlet("/api/usermanage/getRolePri")
-public class GetRolePrivilege extends HttpServlet {
+@WebServlet("/api/usermanage/removeRoleList")
+public class RemoveRoleList extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public GetRolePrivilege() {
+    public RemoveRoleList() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -46,12 +44,10 @@ public class GetRolePrivilege extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		/* 设置响应头部 */
-    	response.setCharacterEncoding("UTF-8");
+		response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		
-		/* 读取请求内容 */
 		request.setCharacterEncoding("UTF-8");
 		BufferedReader reader = request.getReader();
 		String msg = null;
@@ -76,33 +72,25 @@ public class GetRolePrivilege extends HttpServlet {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			
-			/* 构建SQL语句, 通过roleId找到privilegeId*/	
-			String sql2 = "select privilegeId from privilege_role where roleId=?";
-			String sql3 = "select * from privilege where id=?";
+			/* 构建SQL语句*/			
+			String sql = "delete from role where roleId=?";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1, roleId);
+			
+			/*删除与权限的对应关系*/
+			String sql2 = "delete from privilege_role where roleId=?";
 			PreparedStatement ps2 = conn.prepareStatement(sql2);
-			PreparedStatement ps3 = conn.prepareStatement(sql3);
 			ps2.setString(1, roleId);
-			ResultSet rs2 = ps2.executeQuery();
-			
-			/* 执行SQL语句 ， 通过privilegeId找到对应的元组*/
-			JSONObject jsonobj = new JSONObject();
-			JSONArray jsonarray = new JSONArray();
-			while(rs2.next()) {
-				String privilegeId = rs2.getString("privilegeId");
-				ps3.setString(1,privilegeId);
-				ResultSet rs3 = ps3.executeQuery();
-				rs3.next();
-				JSONObject temp = new JSONObject();
-				temp.put("privilegeName", rs3.getString("name_zh"));
-				temp.put("privilegeId", rs3.getString("id"));
-				jsonarray.add(temp);
-			}
-			
+			/*执行*/
+			ps2.executeUpdate();
+			ps.executeUpdate();
 			/* 处理执行结果 */
-			jsonobj.put("permission", jsonarray);
-			jsonobj.put("success", true);
-			out.println(jsonobj);
-		} catch (SQLException e) {
+			JSONObject responseJson = new JSONObject();
+			responseJson.put("success", true);
+			responseJson.put("msg","删除成功");
+			out.println(responseJson);
+		}
+		catch (SQLException e) {
 			e.printStackTrace();
 			/* 处理执行结果 */
 			JSONObject responseJson = new JSONObject();
@@ -123,7 +111,7 @@ public class GetRolePrivilege extends HttpServlet {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		}	
+		}
 	}
 
 }
