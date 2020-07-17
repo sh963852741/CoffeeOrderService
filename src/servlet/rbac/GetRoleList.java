@@ -56,12 +56,20 @@ public class GetRoleList extends HttpServlet {
 			String sql2 = "select * from privilege";
 			ResultSet rs = stmt.executeQuery(sql);
 			JSONArray jsonarray = new JSONArray();
+			JSONArray jsonarray2 = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
+			/*temp用来存role对象数组*/
+			JSONArray temp = new JSONArray();
 			while(rs.next()){
-				jsonarray.add(rs.getString("roleName"));
+				String roleName = rs.getString("roleName");
+				String roleId = rs.getString("roleId");
+				jsonarray.add(roleName);
+				JSONObject tempObj = new JSONObject();
+				tempObj.put("roleName", roleName);
+				tempObj.put("roleId", roleId);
+				temp.add(tempObj);
 			}
 			ResultSet rs2 = stmt.executeQuery(sql2);
-			JSONArray jsonarray2 = new JSONArray();
 			while(rs2.next()){
 				JSONObject jsonobj2 = new JSONObject();
 				jsonobj2.put("privilegeName", rs2.getString("name_zh"));
@@ -69,6 +77,8 @@ public class GetRoleList extends HttpServlet {
 				jsonarray2.add(jsonobj2);
 			}
 			jsonobj.put("permissions", jsonarray2);
+			/*roleObj即为roleId+roleName的对象数组*/
+			jsonobj.put("roleObj", temp);
 			jsonobj.put("roles", jsonarray);
 			jsonobj.put("success",true);
 			out = response.getWriter();
