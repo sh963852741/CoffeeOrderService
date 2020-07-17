@@ -1,4 +1,4 @@
-package servlet.order;
+Ôªøpackage servlet.order;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,8 +6,12 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import com.mysql.cj.jdbc.Driver;
+
+import java.util.Date;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
@@ -15,8 +19,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import net.sf.json.JSONObject;
+import com.google.gson.*;
 
 /**
  * Servlet implementation class CreateOrder
@@ -46,85 +51,82 @@ public class CreateOrder extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		/* …Ë÷√œÏ”¶Õ∑≤ø */
+		/* ËÆæÁΩÆÂìçÂ∫îÂ§¥ÈÉ® */
     	response.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
+		JsonObject responseJson = new JsonObject();
 		
-		/* ∂¡»°«Î«Ûƒ⁄»› */
+		/* ËØªÂèñËØ∑Ê±ÇÂÜÖÂÆπ */
 		request.setCharacterEncoding("UTF-8");
 		BufferedReader reader = request.getReader();
-		String msg = null;
-		StringBuilder message= new StringBuilder();
-		while ((msg = reader.readLine()) != null){			
-			message.append(msg);
-		}		
-		String jsonStr = message.toString();
+		HttpSession session = request.getSession();
 		
-		/* ¥¶¿Ì«Î«Ûƒ⁄»›Œ™ø’µƒ«Èøˆ */
-		if(jsonStr.isEmpty()) 
-		{
-			response.sendError(400);
-			return;
-		}
-		
-		/* Ω‚ŒˆJSONªÒ»° ˝æ› */
-		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
-		UUID mealId = UUID.randomUUID();
-		Double price = jsonObj.getDouble("price");
-		int amount = jsonObj.getInt("amount");
-		String menuId = jsonObj.getString("menuId");
-		String type = jsonObj.getString("type");
+		/* Ëß£ÊûêJSONËé∑ÂèñÊï∞ÊçÆ */
+		JsonElement jsonEle = JsonParser.parseReader(reader);
+		JsonObject jsonObj = jsonEle.getAsJsonObject();
+		String orderId = UUID.randomUUID().toString();
+		String userId = (String) session.getAttribute("userId");
+		JsonArray data = jsonObj.getAsJsonArray("data");
 		
 		Connection conn = null;
-		Statement stmt = null;
 		try {
-			/* ¡¨Ω” ˝æ›ø‚ */
-			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
-			stmt = conn.createStatement();
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT","coffee","TklRpGi1");
 			
-			/* ππΩ®SQL”Ôæ‰  */
-			String sql = "insert into meal(mealId, price, amount, menuId, type) values (?,?,?,?,?)";
-			PreparedStatement ps = conn.prepareStatement(sql);
+			String addOrderMealSql = "INSERT INTO meal_order(mealId, orderId, amount, price) VALUES(?, ?, ?, ?);";
+			String selectMealSql = "SELECT price, amount FROM meal Where mealId = ?;";
+			String addOrderSql = "INSERT INTO orders(orderId, userId) VALUES(?, ?);";
+			PreparedStatement selectMealPs = conn.prepareStatement(selectMealSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			PreparedStatement addOrderMealPs = conn.prepareStatement(addOrderMealSql);
+			PreparedStatement assOrderPs = conn.prepareStatement(addOrderSql);
 			
-			ps.setString(1, mealId.toString());
-			ps.setDouble(2, price);
-			ps.setInt(3, amount);
-			ps.setString(4, menuId);
-			ps.setString(5, type);
+			for(JsonElement item :data) {
+				JsonObject itemObj = item.getAsJsonObject();
+				/* Â¢ûÂä†ËÆ¢Âçï */
+				selectMealPs.setString(1, itemObj.get("mealId").getAsString());
+				ResultSet selectMealRs = selectMealPs.executeQuery();
+				selectMealRs.next();
+				float price = selectMealRs.getFloat("price");
+				addOrderMealPs.setString(1, itemObj.get("mealId").getAsString());
+				addOrderMealPs.setString(2, orderId);
+				addOrderMealPs.setInt(3, itemObj.get("amount").getAsInt());
+				addOrderMealPs.setFloat(4, price);
+				addOrderMealPs.executeUpdate();
+				/* ÂáèÂ∞ëÂ∫ìÂ≠ò */
+				int newAmount = selectMealRs.getInt("amount") - itemObj.get("amount").getAsInt();
+				if(newAmount>=0) {
+					selectMealRs.updateInt("amount", newAmount);
+				}
+				else {
+					responseJson.addProperty("success", false);
+					responseJson.addProperty("msg", "È§êÁÇπÔºö" + itemObj.get("mealId").getAsString() + "ÁöÑ‰ΩôÈáè‰∏çË∂≥");
+					out.print(responseJson.toString());
+					return;
+				}
+				selectMealRs.close();
+			}
 			
-			/* ÷¥––SQL”Ôæ‰  */
-			ps.executeUpdate();
+			assOrderPs.setString(1, orderId);
+			assOrderPs.setString(2, userId);
+			assOrderPs.executeUpdate();
 			
-			/* ¥¶¿Ì÷¥––Ω·π˚ */
-			JSONObject responseJson = new JSONObject();
-			responseJson.put("success", true);
-			responseJson.put("msg","ÃÌº”≥…π¶");
-			out.println(responseJson);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			/* ¥¶¿Ì÷¥––Ω·π˚ */
-			JSONObject responseJson = new JSONObject();
-			responseJson.put("success",false);
-			responseJson.put("msg", e.getMessage());
-			out.println(responseJson);
+			responseJson.addProperty("success", true);
+			
+			out.print(responseJson.toString());
+			selectMealPs.close();
+			addOrderMealPs.close();
+			assOrderPs.close();
+		} catch(SQLException e) {
+			responseJson.addProperty("success", false);
+			responseJson.addProperty("msg", e.getMessage());
+			out.print(responseJson.toString());
 			try {
 				conn.rollback();
 			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} finally {
-			/* Œﬁ¬€»Á∫Œπÿ±’¡¨Ω” */
-			try {
-				stmt.close();
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}	
+		}
 	}
 
 }

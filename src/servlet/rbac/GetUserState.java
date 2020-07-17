@@ -1,5 +1,6 @@
 package servlet.rbac;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
@@ -11,6 +12,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import net.sf.json.JSONObject;
 
@@ -42,39 +46,24 @@ public class GetUserState extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		HttpServletRequest req = (HttpServletRequest)request;
-		HttpSession session = req.getSession();
-		ServletInputStream is;
-		is = request.getInputStream();
-		int nRead = 1;
-		int nTotalRead = 0;
-		byte[] bytes = new byte[10240];
-		try {
-			while (nRead > 0) {
-				nRead = is.read(bytes, nTotalRead, bytes.length - nTotalRead);
-				if (nRead > 0)
-					nTotalRead = nTotalRead + nRead;
-			}
-			String str = new String(bytes, 0, nTotalRead, "utf-8");
-			JSONObject jsonObj = JSONObject.fromObject(str);
-			JSONObject jsonObj2 = new JSONObject();
-			String sessionId = jsonObj.getString("sessionId");
-			if(sessionId.compareTo(session.getId())==0) {
-				String userId = (String) session.getAttribute("userId");
-				jsonObj2.put("userId",userId);
-				jsonObj2.put("success",true);
-			}
-			else {
-				jsonObj2.put("msg","sessionId错误");
-				jsonObj2.put("success",false);
-			}
-			PrintWriter out = response.getWriter();
-			out.println(jsonObj2);
-			out.close();
+		HttpSession session = request.getSession();
+		BufferedReader reader = request.getReader();
+		// JsonObject jsonObj = JsonParser.parseReader(reader).getAsJsonObject();
+		request.setCharacterEncoding("UTF-8");
+		JsonObject jsonObj2 = new JsonObject();
+		if(session.getAttribute("userId")!=null) {
+			jsonObj2.addProperty("userId", (String)session.getAttribute("userId"));
+			jsonObj2.addProperty("success",true);
 		}
-		catch(Exception e) {
+		else {
+			jsonObj2.addProperty("msg"," 查询不到登录信息");
+			jsonObj2.addProperty("success", false);
+		}
 			
-		}
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("text/json; charset=utf-8");
+		PrintWriter out = response.getWriter();
+		out.println(jsonObj2.toString());
+		out.close();
 	}
-
 }
