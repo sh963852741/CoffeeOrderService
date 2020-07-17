@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,12 +53,22 @@ public class GetRoleList extends HttpServlet {
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
 			String sql = "select * from role";
+			String sql2 = "select * from privilege";
 			ResultSet rs = stmt.executeQuery(sql);
 			JSONArray jsonarray = new JSONArray();
 			JSONObject jsonobj = new JSONObject();
 			while(rs.next()){
 				jsonarray.add(rs.getString("roleName"));
 			}
+			ResultSet rs2 = stmt.executeQuery(sql2);
+			JSONArray jsonarray2 = new JSONArray();
+			while(rs2.next()){
+				JSONObject jsonobj2 = new JSONObject();
+				jsonobj2.put("privilegeName", rs2.getString("name_zh"));
+				jsonobj2.put("privilegeId", rs2.getString("id"));
+				jsonarray2.add(jsonobj2);
+			}
+			jsonobj.put("permissions", jsonarray2);
 			jsonobj.put("roles", jsonarray);
 			jsonobj.put("success",true);
 			out = response.getWriter();
