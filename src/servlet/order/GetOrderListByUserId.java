@@ -87,15 +87,7 @@ public class GetOrderListByUserId extends HttpServlet {
 					ps2.setString(1, orderId);
 					ResultSet rs2=ps2.executeQuery();
 					while(rs2.next()) {
-						String mealId=rs2.getString("mealId");
-						String sql3="select price from meal where mealId= ?";
-						PreparedStatement ps3=conn.prepareStatement(sql3);
-						ps3.setString(1, mealId);
-						ResultSet rs3=ps3.executeQuery();
-						while(rs3.next()) {
-							totalprice+=rs3.getDouble("price")*rs2.getInt("amount");
-						}
-						rs3.close();
+						totalprice+=rs2.getInt("amount")*rs2.getDouble("price");
 					}
 					jsonobj2.put("totalPrice",totalprice);
 					jsonarray.add(jsonobj2);
