@@ -83,6 +83,7 @@ public class Login extends HttpServlet {
 					String userId = rs.getString("userId");
 					String sessionId = session.getId();
 					session.setAttribute("userId", userId);
+					session.setAttribute("login", true);
 					jsonobj.put("sessionId",sessionId);
 					
 				}

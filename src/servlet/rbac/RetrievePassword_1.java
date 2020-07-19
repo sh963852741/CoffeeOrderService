@@ -39,8 +39,9 @@ public class RetrievePassword_1 extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doPost(request,response);
+		response.setCharacterEncoding("UTF-8");
+    	response.setHeader("Allow", "POST");
+    	response.sendError(405);
 	}
 
 	/**
@@ -70,27 +71,29 @@ public class RetrievePassword_1 extends HttpServlet {
 				HttpSession session = request.getSession();
 				JSONObject jsonObj = JSONObject.fromObject(str);
 				String telephone = jsonObj.getString("telephone");
-				String userName =jsonObj.getString("userName");
-				String sql = "select * from user where telephone= ? and userName= ?";
+				String sql = "select * from user where telephone= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ps.setString(1, telephone);
-				ps.setString(2, userName);
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
 				while(rs.next())
 				{
 					String randomNumberSize = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
 					String randomNumber = "";
-					for(int i = 4;i>0;i--) 
+					for(int i = 4; i>0; i--) 
 					{ 
-						randomNumber+=randomNumberSize.charAt((int)(Math.random()*62));
+						randomNumber += randomNumberSize.charAt((int)(Math.random()*62));
 					}
-					session.setAttribute("VerificationCode",randomNumber);
+					session.setAttribute("VerificationCode", randomNumber);
+					session.setAttribute("login", false);
+					session.setAttribute("userId", rs.getString("userId"));
+					session.setMaxInactiveInterval(70); //有效期70秒
+					jsonobj.put("success", true);
 					jsonobj.put("VerificationCode",randomNumber);
 				}
 				if(jsonobj.isEmpty()) {
 					jsonobj.put("success", false);
-					jsonobj.put("msg", "手机号不正确");
+					jsonobj.put("msg", "用户名或手机号不正确");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);
