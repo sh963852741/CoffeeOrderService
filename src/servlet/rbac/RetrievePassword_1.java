@@ -1,16 +1,14 @@
-﻿package servlet.rbac;
+package servlet.rbac;
 
-import java.io.*;
+
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
-
-import net.sf.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -20,17 +18,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import net.sf.json.JSONObject;
+
 /**
- * Servlet implementation class login
+ * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/usermanage/login")
-public class Login extends HttpServlet {
+@WebServlet("/api/usermanage/retrievePassword_1")
+public class RetrievePassword_1 extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    
+       
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public Login() {
+    public RetrievePassword_1() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -52,10 +52,9 @@ public class Login extends HttpServlet {
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		Connection conn = null;
-		HttpSession session = request.getSession();
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
 			ServletInputStream is;
 			try {
@@ -69,27 +68,32 @@ public class Login extends HttpServlet {
 						nTotalRead = nTotalRead + nRead;
 				}
 				String str = new String(bytes, 0, nTotalRead, "utf-8");
+				HttpSession session = request.getSession();
 				JSONObject jsonObj = JSONObject.fromObject(str);
-				String userName = jsonObj.getString("userName");
-				String password = jsonObj.getString("password");
-				String sql = "select * from user where userName=? and password=?";
+				String telephone = jsonObj.getString("telephone");
+				String sql = "select * from user where telephone= ?";
 				PreparedStatement ps = conn.prepareStatement(sql);
-				ps.setString(1, userName);
-				ps.setString(2, password);
+				ps.setString(1, telephone);
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
-				if(rs.next()){
-					jsonobj.put("success",true);
-					String userId = rs.getString("userId");
-					String sessionId = session.getId();
-					session.setAttribute("userId", userId);
-					session.setAttribute("login", true);
-					jsonobj.put("sessionId",sessionId);
-					
+				while(rs.next())
+				{
+					String randomNumberSize = "0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM";
+					String randomNumber = "";
+					for(int i = 4; i>0; i--) 
+					{ 
+						randomNumber += randomNumberSize.charAt((int)(Math.random()*62));
+					}
+					session.setAttribute("VerificationCode", randomNumber);
+					session.setAttribute("login", false);
+					session.setAttribute("userId", rs.getString("userId"));
+					session.setMaxInactiveInterval(70); //有效期70秒
+					jsonobj.put("success", true);
+					jsonobj.put("VerificationCode",randomNumber);
 				}
-				else {
-					jsonobj.put("success",false);
-					jsonobj.put("msg", "用户名或密码错误");
+				if(jsonobj.isEmpty()) {
+					jsonobj.put("success", false);
+					jsonobj.put("msg", "用户名或手机号不正确");
 				}
 				out = response.getWriter();
 				out.println(jsonobj);

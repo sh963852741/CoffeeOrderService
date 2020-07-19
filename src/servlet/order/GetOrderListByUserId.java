@@ -14,6 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JSONArray;
@@ -21,7 +22,7 @@ import net.sf.json.JSONArray;
 /**
  * Servlet implementation class GetOrderListByUserId
  */
-@WebServlet("/GetOrderListByUserId")
+@WebServlet("/api/ordermanage/getOrderListByUserId")
 public class GetOrderListByUserId extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -48,6 +49,7 @@ public class GetOrderListByUserId extends HttpServlet {
 		// TODO Auto-generated method stub
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out=response.getWriter();
+		HttpSession session = request.getSession();
 		Connection conn=null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
@@ -66,7 +68,7 @@ public class GetOrderListByUserId extends HttpServlet {
 				}
 				String str=new String(bytes,0,nTotalRead,"utf-8");
 				JSONObject jsonObj=JSONObject.fromObject(str);
-				String userId=jsonObj.getString("userId");
+				String userId=(String)session.getAttribute("userId");
 				String sql="select * from orders where userId= ?";
 				PreparedStatement ps=conn.prepareStatement(sql);
 				ps.setString(1,userId);
@@ -74,17 +76,30 @@ public class GetOrderListByUserId extends HttpServlet {
 				JSONObject jsonobj=new JSONObject();
 				JSONObject jsonobj2=new JSONObject();
 				JSONArray jsonarray = new JSONArray();
+				double totalprice=0;
 				while(rs.next()) {
-					jsonobj2.put("orderId",rs.getString("orderId"));
+					String orderId=rs.getString("orderId");
+					jsonobj2.put("orderId",orderId);
 					jsonobj2.put("createdTime",rs.getString("createdTime"));
+					jsonobj2.put("status",rs.getString("status"));
+					String sql2="select * from meal_order where orderId= ?";
+					PreparedStatement ps2=conn.prepareStatement(sql2);
+					ps2.setString(1, orderId);
+					ResultSet rs2=ps2.executeQuery();
+					while(rs2.next()) {
+						totalprice+=rs2.getInt("amount")*rs2.getDouble("price");
+					}
+					jsonobj2.put("totalPrice",totalprice);
 					jsonarray.add(jsonobj2);
+					totalprice=0;
+					rs2.close();
 				}
 				if(jsonobj2.isEmpty()) {
 					jsonobj.put("success",false);
-					jsonobj.put("msg","��ȡʧ��");
+					jsonobj.put("msg","该用户无订单记录");
 				}else {
 					jsonobj.put("success",true);
-					jsonobj.put("msg","��ȡ�ɹ�");
+					jsonobj.put("msg","订单记录获取成功");
 				}
 				jsonobj.put("data",jsonarray);
 				out=response.getWriter();

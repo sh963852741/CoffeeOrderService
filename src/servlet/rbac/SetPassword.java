@@ -65,12 +65,6 @@ public class SetPassword extends HttpServlet {
 		}		
 		String jsonStr = message.toString();
 		
-		/* 处理请求内容为空的情况 */
-		if(jsonStr.isEmpty()) 
-		{
-			response.sendError(400);
-			return;
-		}
 		
 		/* 解析JSON获取数据 */
 		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
