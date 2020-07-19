@@ -53,6 +53,7 @@ public class loginFilter implements Filter {
 		String whiteList[] = {
 				"/login",
 				"/regist",
+				"getVerificationCode",
 				"retrievePassword"
 		};
 		for(String item:whiteList) {

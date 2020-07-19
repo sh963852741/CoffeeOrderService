@@ -1,5 +1,6 @@
 package servlet.menu;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
@@ -67,6 +68,12 @@ public class DownLoadImg extends HttpServlet {
 			rs.close();
 			
 			/* 读取文件 */
+
+			File file = new File(imgPath);
+			if(!file.exists()){
+				response.sendError(404);
+				return;
+			}
 			FileInputStream picture = new FileInputStream(imgPath);
 			out.write(picture.readAllBytes());
 			picture.close();

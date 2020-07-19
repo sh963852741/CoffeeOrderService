@@ -23,14 +23,14 @@ import net.sf.json.JSONObject;
 /**
  * Servlet implementation class getUserInfo
  */
-@WebServlet("/api/usermanage/retrievePassword_1")
-public class RetrievePassword_1 extends HttpServlet {
+@WebServlet("/api/usermanage/getVerificationCode")
+public class GetVerificationCode extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public RetrievePassword_1() {
+    public GetVerificationCode() {
         super();
         // TODO Auto-generated constructor stub
     }
