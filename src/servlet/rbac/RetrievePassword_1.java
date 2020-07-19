@@ -53,7 +53,7 @@ public class RetrievePassword_1 extends HttpServlet {
 		Connection conn = null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT","coffee","TklRpGi1");
 			Statement stmt = conn.createStatement();
 			ServletInputStream is;
 			try {

@@ -9,8 +9,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -19,8 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Servlet implementation class regist
@@ -60,35 +59,21 @@ public class GetUserInfo extends HttpServlet {
 		/* 读取请求内容 */
 		request.setCharacterEncoding("UTF-8");
 		BufferedReader reader = request.getReader();
-		String msg = null;
-		StringBuilder message= new StringBuilder();
-		while ((msg = reader.readLine()) != null){			
-			message.append(msg);
-		}		
-		String jsonStr = message.toString();
 		
 		/* 解析JSON获取数据 */
-		JSONObject jsonObj = JSONObject.fromObject(jsonStr);
-		String userId = "";
-		try {
-			userId = jsonObj.getString("userId");
-		}
-		catch(Exception e) {
-			userId = null;
-		}
-		if(userId==null) {
-			userId = "";
-			HttpServletRequest req = (HttpServletRequest)request;
-			HttpSession session = req.getSession();
+		JsonObject jsonObj = JsonParser.parseReader(reader).getAsJsonObject();
+		
+		String userId = jsonObj.get("userId") == null ? null : jsonObj.get("userId").getAsString();
+		if(userId == null) {
+			HttpSession session = request.getSession();
 			userId = (String) session.getAttribute("userId");
 		}
+		
 		Connection conn = null;
-		Statement stmt = null;
 		try {
 			/* 连接数据库 */
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
-			stmt = conn.createStatement();
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT", "coffee", "TklRpGi1");
 			
 			/* 构建SQL语句  */
 			String sql1 = "select * from user where userId=?;";
@@ -104,33 +89,32 @@ public class GetUserInfo extends HttpServlet {
 			ResultSet rs2 = ps2.executeQuery();
 			
 			/* 处理执行结果 */
-			JSONObject responseJson = new JSONObject();
-			JSONArray jsonarray = new JSONArray();
+			JsonObject responseJson = new JsonObject();
+			JsonArray jsonarray = new JsonArray();
 			
 			while(rs1.next()){
-				responseJson.put("userId", rs1.getString("userId"));
-				responseJson.put("userName", rs1.getString("userName"));
-				responseJson.put("password", rs1.getString("password"));
-				responseJson.put("telephone",rs1.getString("telephone") == null ? "" : rs1.getString("telephone"));
-				responseJson.put("email",rs1.getString("email") == null ? "" : rs1.getString("email"));
+				responseJson.addProperty("userId", rs1.getString("userId"));
+				responseJson.addProperty("userName", rs1.getString("userName"));
+				responseJson.addProperty("telephone", rs1.getString("telephone"));
+				responseJson.addProperty("email", rs1.getString("email"));
 			}
 			
 			while(rs2.next()){
 				jsonarray.add(rs2.getString("roleName"));
 			}
-			responseJson.put("role", jsonarray);
+			responseJson.add("role", jsonarray);
 			
 			rs1.close();
 			rs2.close();
-			responseJson.put("success", true);
-			responseJson.put("msg","");
-			out.println(responseJson);
+			responseJson.addProperty("success", true);
+			responseJson.addProperty("msg","");
+			out.print(responseJson.toString());
 		} catch (SQLException e) {
 			e.printStackTrace();
 			/* 处理执行结果 */
-			JSONObject responseJson = new JSONObject();
-			responseJson.put("success",false);
-			responseJson.put("msg", e.getMessage());
+			JsonObject responseJson = new JsonObject();
+			responseJson.addProperty("success",false);
+			responseJson.addProperty("msg", e.getMessage());
 			out.println(responseJson);
 			try {
 				conn.rollback();
@@ -142,7 +126,6 @@ public class GetUserInfo extends HttpServlet {
 		} finally {
 			/* 无论如何关闭连接 */
 			try {
-				stmt.close();
 				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();

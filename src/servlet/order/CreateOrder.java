@@ -74,15 +74,19 @@ public class CreateOrder extends HttpServlet {
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT","coffee","TklRpGi1");
 			
 			String addOrderMealSql = "INSERT INTO meal_order(mealId, orderId, amount, price) VALUES(?, ?, ?, ?);";
-			String selectMealSql = "SELECT price, amount FROM meal Where mealId = ?;";
+			String selectMealSql = "SELECT * FROM meal Where mealId = ?;";
 			String addOrderSql = "INSERT INTO orders(orderId, userId) VALUES(?, ?);";
 			PreparedStatement selectMealPs = conn.prepareStatement(selectMealSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			PreparedStatement addOrderMealPs = conn.prepareStatement(addOrderMealSql);
 			PreparedStatement assOrderPs = conn.prepareStatement(addOrderSql);
 			
+			/* 创建订单 */
+			assOrderPs.setString(1, orderId);
+			assOrderPs.setString(2, userId);
+			assOrderPs.executeUpdate();
 			for(JsonElement item :data) {
 				JsonObject itemObj = item.getAsJsonObject();
-				/* 增加订单 */
+				/* 设置订单餐品对应 */
 				selectMealPs.setString(1, itemObj.get("mealId").getAsString());
 				ResultSet selectMealRs = selectMealPs.executeQuery();
 				selectMealRs.next();
@@ -105,17 +109,13 @@ public class CreateOrder extends HttpServlet {
 				}
 				selectMealRs.close();
 			}
-			
-			assOrderPs.setString(1, orderId);
-			assOrderPs.setString(2, userId);
-			assOrderPs.executeUpdate();
-			
-			responseJson.addProperty("success", true);
-			
-			out.print(responseJson.toString());
+
+			assOrderPs.close();
 			selectMealPs.close();
 			addOrderMealPs.close();
-			assOrderPs.close();
+			
+			responseJson.addProperty("success", true);
+			out.print(responseJson.toString());
 		} catch(SQLException e) {
 			responseJson.addProperty("success", false);
 			responseJson.addProperty("msg", e.getMessage());
