@@ -15,8 +15,6 @@ import javax.servlet.http.HttpSession;
 
 import com.google.gson.JsonObject;
 
-import net.sf.json.JSONObject;
-
 /**
  * Servlet Filter implementation class loginFilter
  */
@@ -53,6 +51,7 @@ public class loginFilter implements Filter {
 		String whiteList[] = {
 				"/login",
 				"/regist",
+				"getVerificationCode",
 				"retrievePassword"
 		};
 		for(String item:whiteList) {
