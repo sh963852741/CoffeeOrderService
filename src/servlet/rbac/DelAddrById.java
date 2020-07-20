@@ -1,4 +1,4 @@
-package servlet.menu;
+package servlet.rbac;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,30 +6,30 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mysql.cj.jdbc.Driver;
 
 /**
- * Servlet implementation class Get
+ * Servlet implementation class DelAddrById
  */
-@WebServlet("/api/menu/getMealByKind")
-public class GetMealByKind extends HttpServlet {
+@WebServlet("/api/usermanage/DelAddrById")
+public class DelAddrById extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public GetMealByKind() {
+    public DelAddrById() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -38,14 +38,16 @@ public class GetMealByKind extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doPost(request, response);
+		// TODO Auto-generated method stub
+		response.getWriter().append("Served at: ").append(request.getContextPath());
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		request.setCharacterEncoding("UTF-8");
+		// TODO Auto-generated method stub
+		doGet(request, response);request.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
 		PrintWriter out = response.getWriter();
 		BufferedReader reader = request.getReader();
@@ -53,37 +55,27 @@ public class GetMealByKind extends HttpServlet {
 		
 		Connection conn = null;
 		try {
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT", "coffee", "TklRpGi1");
-			String sql = "select distinct type from meal";
-			String sql2 = "select distinct type from meal where menuId = ?";
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT","coffee","TklRpGi1");
 			
+			String id = requestJson.get("id").getAsString();
+			String sql = "Delete user_addr where id=?";
 			PreparedStatement ps = conn.prepareStatement(sql);
-			PreparedStatement ps2 = conn.prepareStatement(sql2);
+			ps.setString(1, id);
+			ps.executeUpdate();
+			JsonObject jsonobj = new JsonObject();
+			jsonobj.addProperty("success",true);
+			out = response.getWriter();
+			out.print(jsonobj);
 			
-			ResultSet rs = null;
-			if(requestJson.get("menuId") == null) {
-				rs = ps.executeQuery();
-			} else {
-				ps2.setString(1, requestJson.get("menuId").getAsString());
-				rs = ps2.executeQuery();
-			}
-				
-			/* 获取所有类别 */
-			JsonArray type = new JsonArray();
-			while(rs.next()) {
-				type.add(rs.getString("type"));
-			}
-			rs.close();
-			
-			JsonObject responseJson = new JsonObject();
-			responseJson.add("data", type);
-			responseJson.addProperty("success",true);
-			out.print(responseJson);
-		} catch (SQLException e) {
+			conn.close();
+		} catch (SQLException | ClassNotFoundException e) {
+			e.printStackTrace();
+			/* 处理执行结果 */
 			JsonObject responseJson = new JsonObject();
 			responseJson.addProperty("success",false);
 			responseJson.addProperty("msg", e.getMessage());
-			out.print(responseJson);
+			out.println(responseJson);
 			try {
 				conn.rollback();
 			} catch (SQLException e1) {
