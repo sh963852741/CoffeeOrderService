@@ -77,7 +77,7 @@ public class GetShoppingCart extends HttpServlet {
 				ResultSet rs = ps.executeQuery();
 				JSONObject jsonobj = new JSONObject();
 				JSONObject jsonobj2 = new JSONObject();
-				JSONArray  jsonarray = new JSONArray();
+				JSONArray jsonarray = new JSONArray();
 				while(rs.next()){
 					String sql_next = "select * from meal where mealId= ?";
 					PreparedStatement ps_next = conn.prepareStatement(sql_next);
@@ -93,15 +93,9 @@ public class GetShoppingCart extends HttpServlet {
 						jsonarray.add(jsonobj2);
 					}
 				}
-				if(jsonarray.isEmpty()) {
-					jsonobj.put("success", false);
-					jsonobj.put("msg", "为空");
-				}
-				else {
-					jsonobj.put("success", true);
-					jsonobj.put("msg", "操作成功");
-					jsonobj.put("data",jsonarray);
-				}
+				jsonobj.put("success", true);
+				jsonobj.put("msg", "操作成功");
+				jsonobj.put("data", jsonarray);
 				out = response.getWriter();
 				out.println(jsonobj);
 				rs.close();

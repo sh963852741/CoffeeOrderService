@@ -65,12 +65,19 @@ public class SaveAddrById extends HttpServlet {
 			String street = requestJson.get("street").getAsString();
 			String zipcode = requestJson.get("zipcode").getAsString();
 			String country = requestJson.get("country").getAsString();
+			String telephone = requestJson.get("telephone").getAsString();
+			String receiver = requestJson.get("receiver").getAsString();
 			boolean isDefaultAddr = requestJson.get("isDefaultAddr").getAsBoolean();
+			/* 如果这个是默认地址 */
+			if(isDefaultAddr) {
+				PreparedStatement ps = conn.prepareStatement("Update user_addr Set isDefaultAddr = false Where isDefaultAddr = true;");
+				ps.executeUpdate();
+			}
 			if(requestJson.get("id") == null || requestJson.get("id").isJsonNull()) {
 				String id = UUID.randomUUID().toString();
 				/* 没有id则新建 */
-				String sql = "insert into user_addr(address, userId, id, provence, city, street, zipcode, country, isDefaultAddr"
-						+ "values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				String sql = "insert into user_addr(address, userId, id, provence, city, street, zipcode, country, isDefaultAddr, telephone, receiver)"
+						+ "values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ps.setString(1, address);
 				ps.setString(2, userId);
@@ -81,11 +88,13 @@ public class SaveAddrById extends HttpServlet {
 				ps.setString(7, zipcode);
 				ps.setString(8, country);
 				ps.setBoolean(9, isDefaultAddr);
+				ps.setString(10, telephone);
+				ps.setString(11, receiver);
 				ps.executeUpdate();
 			} else {
 				String id = requestJson.get("id").getAsString();
 				String sql = "update user_addr set address=?, userId=?, provence=?, city=?,"
-						+ "street=?, zipcode=?, country=?, isDefaultAddr=? where id=?";
+						+ "street=?, zipcode=?, country=?, isDefaultAddr=?, telephone=?, receiver=? where id=?";
 				PreparedStatement ps = conn.prepareStatement(sql);
 				ps.setString(1, address);
 				ps.setString(2, userId);
@@ -95,7 +104,9 @@ public class SaveAddrById extends HttpServlet {
 				ps.setString(6, zipcode);
 				ps.setString(7, country);
 				ps.setBoolean(8, isDefaultAddr);
-				ps.setString(9, id);
+				ps.setString(9, telephone);
+				ps.setString(10, receiver);
+				ps.setString(11, id);
 				ps.executeUpdate();
 			}
 			JsonObject jsonobj = new JsonObject();

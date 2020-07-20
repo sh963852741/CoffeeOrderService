@@ -38,8 +38,9 @@ public class GetUserList extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doPost(request,response);
+		response.setCharacterEncoding("UTF-8");
+    	response.setHeader("Allow", "POST");
+    	response.sendError(405);
 	}
 
 	/**

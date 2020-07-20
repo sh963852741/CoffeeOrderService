@@ -7,17 +7,15 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JSONArray;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 /**
  * Servlet implementation class GetOrderListByUserId
@@ -47,72 +45,57 @@ public class GetOrderListByUserId extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
+		request.setCharacterEncoding("UTF-8");
 		response.setContentType("text/json; charset=utf-8");
-		PrintWriter out=response.getWriter();
+		PrintWriter out = response.getWriter();
 		HttpSession session = request.getSession();
+		// BufferedReader reader = request.getReader();
+		// JsonObject requestJson = JsonParser.parseReader(reader).getAsJsonObject();
+		
 		Connection conn=null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn=DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
-			Statement stmt=conn.createStatement();
-			ServletInputStream is;
-			try {
-				is=request.getInputStream();
-				int nRead=1;
-				int nTotalRead=0;
-				byte[] bytes=new byte[10240];
-				while(nRead>0) {
-					nRead=is.read(bytes,nTotalRead,bytes.length-nTotalRead);
-					if(nRead>0)
-						nTotalRead+=nRead;
-				}
-				String str=new String(bytes,0,nTotalRead,"utf-8");
-				JSONObject jsonObj=JSONObject.fromObject(str);
-				String userId=(String)session.getAttribute("userId");
-				String sql="select * from orders where userId= ?";
-				PreparedStatement ps=conn.prepareStatement(sql);
-				ps.setString(1,userId);
-				ResultSet rs=ps.executeQuery();
-				JSONObject jsonobj=new JSONObject();
-				JSONObject jsonobj2=new JSONObject();
-				JSONArray jsonarray = new JSONArray();
-				double totalprice=0;
-				while(rs.next()) {
-					String orderId=rs.getString("orderId");
-					jsonobj2.put("orderId",orderId);
-					jsonobj2.put("createdTime",rs.getString("createdTime"));
-					jsonobj2.put("status",rs.getString("status"));
-					String sql2="select * from meal_order where orderId= ?";
-					PreparedStatement ps2=conn.prepareStatement(sql2);
-					ps2.setString(1, orderId);
-					ResultSet rs2=ps2.executeQuery();
-					while(rs2.next()) {
-						totalprice+=rs2.getInt("amount")*rs2.getDouble("price");
-					}
-					jsonobj2.put("totalPrice",totalprice);
-					jsonarray.add(jsonobj2);
-					totalprice=0;
-					rs2.close();
-				}
-				if(jsonobj2.isEmpty()) {
-					jsonobj.put("success",false);
-					jsonobj.put("msg","该用户无订单记录");
-				}else {
-					jsonobj.put("success",true);
-					jsonobj.put("msg","订单记录获取成功");
-				}
-				jsonobj.put("data",jsonarray);
-				out=response.getWriter();
-				out.println(jsonobj);
-				rs.close();
-				stmt.close();
-				conn.close();
-			}catch(IOException e) {
-				e.printStackTrace();
+			conn=DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT", "coffee", "TklRpGi1");
+
+			String userId = (String)session.getAttribute("userId");
+			String sql="select * from orders where userId= ?";
+			PreparedStatement ps = conn.prepareStatement(sql);
+			ps.setString(1,userId);
+			ResultSet rs = ps.executeQuery();
+			JsonObject responseJson = new JsonObject();
+			JsonArray dataArray = new JsonArray();
+			while(rs.next()) {
+				JsonObject obj = new JsonObject();
+				obj.addProperty("orderId", rs.getString("orderId"));
+				obj.addProperty("createdTime", rs.getTime("createdTime").toString());
+				obj.addProperty("status", rs.getString("status"));
+				obj.addProperty("addrId", rs.getString("addrId"));
+				obj.addProperty("isTakeOut", rs.getBoolean("isTakeOut"));
+				obj.addProperty("payment", rs.getString("payment"));
+				obj.addProperty("remark", rs.getString("remark"));
+				obj.addProperty("packingCharges", rs.getFloat("packingCharges"));
+				obj.addProperty("totalPrice", rs.getFloat("totalPrice"));
+				obj.addProperty("deliveryFee", rs.getFloat("deliveryFee"));
+				dataArray.add(obj);
 			}
+			rs.close();
+			responseJson.addProperty("success", true);
+			responseJson.addProperty("msg","订单记录获取成功");
+			responseJson.add("data",dataArray);
+			out = response.getWriter();
+			out.print(responseJson);
+			conn.close();
 		}catch(SQLException | ClassNotFoundException e) {
 			e.printStackTrace();
+			JsonObject responseJson = new JsonObject();
+			responseJson.addProperty("success",false);
+			responseJson.addProperty("msg", e.getMessage());
+			out.println(responseJson);
+			try {
+				conn.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
-
 }

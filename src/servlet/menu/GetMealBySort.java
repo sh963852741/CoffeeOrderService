@@ -83,9 +83,9 @@ public class GetMealBySort extends HttpServlet {
 			rs2.close();
 			
 			ResultSet rs3 = ps3.executeQuery();
-			JsonObject jsonobj = new JsonObject();
 			while(rs3.next()) {
 				String type = rs3.getString("type");
+				JsonObject jsonobj = new JsonObject();
 				jsonobj.addProperty("mealId",rs3.getString("mealId"));
 				jsonobj.addProperty("mealName",rs3.getString("mealName"));
 				jsonobj.addProperty("price",rs3.getDouble("price"));
