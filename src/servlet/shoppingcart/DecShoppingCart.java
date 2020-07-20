@@ -76,7 +76,6 @@ public class DecShoppingCart extends HttpServlet {
 				ps.setString(1, mealId);
 				ps.setString(2, userId);
 				ps.executeUpdate();
-				JSONObject jsonobj = new JSONObject();
 				
 				String sql_q = "select * from user_meal where mealId= ? and userId= ?";
 				PreparedStatement ps_q = conn.prepareStatement(sql_q);

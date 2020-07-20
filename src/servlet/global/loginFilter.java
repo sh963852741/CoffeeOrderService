@@ -15,8 +15,6 @@ import javax.servlet.http.HttpSession;
 
 import com.google.gson.JsonObject;
 
-import net.sf.json.JSONObject;
-
 /**
  * Servlet Filter implementation class loginFilter
  */

@@ -74,7 +74,7 @@ public class GetUserList extends HttpServlet {
 			String countSql ="select count(*) as total from user";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			PreparedStatement countPs = conn.prepareStatement(countSql);
-			ps.setInt(1, (page - 1) * pageSize - 1);
+			ps.setInt(1, (page - 1) * pageSize);
 			ps.setInt(2, pageSize);
 			ResultSet rs = ps.executeQuery();
 			ResultSet countRs = countPs.executeQuery();
