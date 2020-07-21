@@ -6,8 +6,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.UUID;
 
 import javax.servlet.ServletException;
@@ -68,29 +68,37 @@ public class UpLoadImg extends HttpServlet {
 		part.write(path);
 		
 		Connection conn = null;
-		Statement stmt = null;
 		try {
 			/* 连接数据库 */
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT", "coffee", "TklRpGi1");
-			stmt = conn.createStatement();
 			
 			/* 构建SQL语句 */
-			String sql = "UPDATE meal SET pictureUrl=? WHERE mealId=?;";
-			PreparedStatement ps = conn.prepareStatement(sql);
+			String sql = "Select mealId, pictureUrl From meal WHERE mealId=?;";//SET pictureUrl=? 
+			PreparedStatement ps = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			
-			ps.setString(1, path);
-			ps.setString(2, mealId);
-			
+			ps.setString(1, mealId);
 			
 			/* 执行SQL语句 */
-			ps.executeUpdate();
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			if(rs.getString("pictureUrl") == null) {
+				/* 什么都不做 */
+			} else {
+				/* 删除原有图片 */
+				String previousPath = rs.getString("pictureUrl");
+				File previousPic = new File(previousPath);
+				if(previousPic.exists()) previousPic.delete();
+			}
+			rs.updateString("pictureUrl", path);
+			rs.updateRow();
+			rs.close();
 			
 			/* 处理执行结果 */
 			JsonObject responseJson = new JsonObject();
 			responseJson.addProperty("success", true);
 			responseJson.addProperty("msg", "上传成功");
-			out.println(responseJson);
+			out.print(responseJson);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			/* 处理执行结果 */
@@ -109,7 +117,6 @@ public class UpLoadImg extends HttpServlet {
 		} finally {
 			/* 无论如何关闭连接 */
 			try {
-				stmt.close();
 				conn.close();
 			} catch (SQLException e) {
 				e.printStackTrace();

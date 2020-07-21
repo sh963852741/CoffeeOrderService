@@ -57,9 +57,9 @@ public class GetAddrListById extends HttpServlet {
 			ps.setString(1, (String)session.getAttribute("userId"));
 			ResultSet rs = ps.executeQuery();
 			JsonArray jsonArray = new JsonArray();
-			JsonObject jsonobj = new JsonObject();
 			JsonObject jsonobj2 = new JsonObject();
 			while(rs.next()){
+				JsonObject jsonobj = new JsonObject();
 				jsonobj.addProperty("address",rs.getString("address"));
 				jsonobj.addProperty("userId",rs.getString("userId"));
 				jsonobj.addProperty("id",rs.getString("id"));
@@ -69,6 +69,8 @@ public class GetAddrListById extends HttpServlet {
 				jsonobj.addProperty("zipcode",rs.getString("zipcode"));
 				jsonobj.addProperty("country",rs.getString("country"));
 				jsonobj.addProperty("isDefaultAddr",rs.getBoolean("isDefaultAddr"));
+				jsonobj.addProperty("receiver",rs.getString("receiver"));
+				jsonobj.addProperty("telephone",rs.getString("telephone"));
 				jsonArray.add(jsonobj);
 			}
 			rs.close();

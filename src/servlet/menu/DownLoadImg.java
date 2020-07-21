@@ -69,8 +69,7 @@ public class DownLoadImg extends HttpServlet {
 			
 			/* 读取文件 */
 
-			File file = new File(imgPath);
-			if(!file.exists()){
+			if(imgPath == null) {
 				response.sendError(404);
 				return;
 			}

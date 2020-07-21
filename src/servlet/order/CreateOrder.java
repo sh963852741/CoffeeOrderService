@@ -65,6 +65,12 @@ public class CreateOrder extends HttpServlet {
 		JsonObject jsonObj = jsonEle.getAsJsonObject();
 		String orderId = UUID.randomUUID().toString();
 		String userId = (String) session.getAttribute("userId");
+		String addrId = jsonObj.get("addrId").getAsString();
+		String remark = jsonObj.get("remark").getAsString();
+		String payment = jsonObj.get("payment").getAsString();
+		float packingCharges = jsonObj.get("packingCharges").getAsFloat();
+		float deliveryFee = jsonObj.get("deliveryFee").getAsFloat();
+		boolean isTakeOut = (boolean) jsonObj.get("isTakeOut").getAsBoolean();
 		JsonArray data = jsonObj.getAsJsonArray("data");
 		
 		Connection conn = null;
@@ -73,15 +79,24 @@ public class CreateOrder extends HttpServlet {
 			
 			String addOrderMealSql = "INSERT INTO meal_order(mealId, orderId, amount, price) VALUES(?, ?, ?, ?);";
 			String selectMealSql = "SELECT * FROM meal Where mealId = ?;";
-			String addOrderSql = "INSERT INTO orders(orderId, userId) VALUES(?, ?);";
+			String addOrderSql = "INSERT INTO orders(orderId, userId, addrId, isTakeOut, remark,"
+					+ "payment, packingCharges, deliveryFee) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);";
 			PreparedStatement selectMealPs = conn.prepareStatement(selectMealSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			PreparedStatement addOrderMealPs = conn.prepareStatement(addOrderMealSql);
 			PreparedStatement assOrderPs = conn.prepareStatement(addOrderSql);
 			
-			/* 创建订单 */
+			/* 创建订单 1/2 */
 			assOrderPs.setString(1, orderId);
 			assOrderPs.setString(2, userId);
-			assOrderPs.executeUpdate();
+			assOrderPs.setString(3, addrId);
+			assOrderPs.setBoolean(4, isTakeOut);
+			assOrderPs.setString(5, remark);
+			assOrderPs.setString(6, payment);
+			assOrderPs.setFloat(7, packingCharges);
+			assOrderPs.setFloat(8, deliveryFee);
+
+			float totalPrice = 0;
+
 			for(JsonElement item :data) {
 				JsonObject itemObj = item.getAsJsonObject();
 				/* 设置订单餐品对应 */
@@ -94,10 +109,12 @@ public class CreateOrder extends HttpServlet {
 				addOrderMealPs.setInt(3, itemObj.get("amount").getAsInt());
 				addOrderMealPs.setFloat(4, price);
 				addOrderMealPs.executeUpdate();
+				totalPrice += price * itemObj.get("amount").getAsInt();
 				/* 减少库存 */
 				int newAmount = selectMealRs.getInt("amount") - itemObj.get("amount").getAsInt();
 				if(newAmount>=0) {
 					selectMealRs.updateInt("amount", newAmount);
+					selectMealRs.updateRow();
 				}
 				else {
 					responseJson.addProperty("success", false);
@@ -107,7 +124,13 @@ public class CreateOrder extends HttpServlet {
 				}
 				selectMealRs.close();
 			}
-
+			/* 创建订单 2/2 */
+			String setTotalPriceSql = "Update orders set totalPrice = ? Where orderId = ?;";
+			PreparedStatement setTotalPricePs = conn.prepareStatement(setTotalPriceSql);
+			setTotalPricePs.setFloat(1, totalPrice + packingCharges + deliveryFee);
+			setTotalPricePs.setString(2, orderId);
+			setTotalPricePs.executeUpdate();
+			setTotalPricePs.close();
 			assOrderPs.close();
 			selectMealPs.close();
 			addOrderMealPs.close();
