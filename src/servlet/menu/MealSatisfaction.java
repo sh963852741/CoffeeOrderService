@@ -3,16 +3,11 @@ package servlet.menu;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -62,53 +57,84 @@ public class MealSatisfaction extends HttpServlet {
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT", "coffee", "TklRpGi1");
 			Statement stmt = conn.createStatement();
 			
-			/*用来记录mealId,mealName对应关系*/
-			Map<String,String>meals = new HashMap<String,String>();
-			/*用来记录mealId,订餐amount*/
-			Map<String,Integer>mealAmounts = new HashMap<String,Integer>();
-			
 			/* 构建SQL语句  */
-			String sql1 = "select mealId,amount from meal_order;";
-			String sql2 = "select mealId,mealName from meal where mealId=?;";
-			PreparedStatement ps2 = conn.prepareStatement(sql2);
-			
-			/*执行第一个sql*/
-			ResultSet rs = stmt.executeQuery(sql1);
-						
-			while(rs.next()){
-				String mealId = rs.getString("mealId");
-				int amount = rs.getInt("amount");
-				if(mealAmounts.containsKey(mealId)) {
-					mealAmounts.put(mealId, mealAmounts.get(mealId)+amount);
-				}
-				else mealAmounts.put(mealId, amount);
-				ps2.setString(1, mealId);
-				ResultSet rs2 = ps2.executeQuery();
-				rs2.next();
-				String mealName = rs2.getString("mealName");
-				meals.put(mealId, mealName);				
+			/*过去一个月订单量变化趋势*/
+			String sql3 = "select COUNT(*) AS amount, DATE(createdTime) AS time FROM orders where"
+					+ " createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()"
+					+ " GROUP BY time ORDER BY time;";
+			/*过去一个月支付方式统计*/
+			String sql4 = "select payment,COUNT(*) AS amount, DATE(createdTime) AS time FROM orders"
+					+ " WHERE createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()" + 
+					" GROUP BY payment ORDER BY payment DESC";
+			/*各餐点数量,降序*/
+			String sql5 = "select meal_order.mealId, mealName, COUNT(*) AS amount" + 
+					" FROM meal_order join meal on meal_order.mealId = meal.mealId GROUP BY mealId" + 
+					" ORDER BY amount DESC;";
+			/*过去一个月订单量Top5*/
+			String sql6 = "select COUNT(*) AS amount, DATE(createdTime) AS time FROM orders"
+					+ " WHERE createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()"
+					+ " GROUP BY DATE(createdTime) ORDER BY amount DESC LIMIT 10;";
+			/*过去一个月销售额*/
+			String sql7 ="select Sum(totalPrice) as money FROM orders"
+					+ " WHERE createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()";
+			/*处理数据*/
+			int totalOrders = 0;
+			ResultSet rs3 = stmt.executeQuery(sql3);
+			JsonArray jsonarray31 = new JsonArray();
+			JsonArray jsonarray32 = new JsonArray();
+			while(rs3.next()) {
+				int amount = rs3.getInt("amount");
+				totalOrders+=amount;
+				Date time = rs3.getDate("time");
+				jsonarray31.add(amount);
+				jsonarray32.add(time.toString());
 			}
-			/*从大到小排序*/
-			List<Map.Entry<String, Integer>> list = new ArrayList<Map.Entry<String, Integer>>(mealAmounts.entrySet()); //转换为list
-			list.sort(new Comparator<Map.Entry<String, Integer>>() {
-	            @Override
-	            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
-	                return o2.getValue().compareTo(o1.getValue());
-	            }
-	        });
+			ResultSet rs4 = stmt.executeQuery(sql4);
+			JsonArray jsonarray4 = new JsonArray();
+			while(rs4.next()) {
+				JsonObject jsonobj = new JsonObject();
+				int amount = rs4.getInt("amount");
+				String payment = rs4.getString("payment");
+				Date time = rs4.getDate("time");
+				jsonobj.addProperty("value", amount);
+				jsonobj.addProperty("name", payment);
+				jsonobj.addProperty("date", time.toString());
+				jsonarray4.add(jsonobj);
+			}
+			ResultSet rs5 = stmt.executeQuery(sql5);
+			JsonArray jsonarray5 = new JsonArray();
+			while(rs5.next()) {
+				JsonObject jsonobj = new JsonObject();
+				int amount = rs5.getInt("amount");
+				String mealId = rs5.getString("mealId");
+				String mealName = rs5.getString("mealName");
+				jsonobj.addProperty("value", amount);
+				jsonobj.addProperty("mealId", mealId);
+				jsonobj.addProperty("name", mealName);
+				jsonarray5.add(jsonobj);
+			}
+			ResultSet rs6 = stmt.executeQuery(sql6);
+			JsonArray jsonarray6 = new JsonArray();
+			while(rs6.next()) {
+				JsonObject jsonobj = new JsonObject();
+				int amount = rs6.getInt("amount");
+				Date time = rs6.getDate("time");
+				jsonobj.addProperty("amount", amount);
+				jsonobj.addProperty("date", time.toString());
+				jsonarray6.add(jsonobj);
+			}
+			ResultSet rs7 = stmt.executeQuery(sql7);
+			rs7.next();
+			Double moneyPerMonth = rs7.getDouble("money");
 			/* 处理执行结果 */
 			JsonObject responseJson1 = new JsonObject();
-			JsonArray jsonarray1 = new JsonArray();
-			for(Map.Entry<String,Integer> e : list) {
-				JsonObject jsonobj = new JsonObject();
-				jsonobj.addProperty("mealName", meals.get(e.getKey()));
-				jsonobj.addProperty("totalAmount", e.getValue());
-				jsonarray1.add(jsonobj);
-			}
-			/*排序方式倒序*/
-			responseJson1.addProperty("Order","Descending");
-			responseJson1.add("data", jsonarray1);		
-			rs.close();
+			responseJson1.addProperty("totalOrders",totalOrders);
+			responseJson1.add("OrderChangeListX", jsonarray32);
+			responseJson1.add("OrderChangeListY", jsonarray31);
+			responseJson1.add("paymentWay", jsonarray4);
+			responseJson1.add("mealList", jsonarray5);
+			responseJson1.add("topFiveOrders", jsonarray6);
+			responseJson1.addProperty("moneyPerMonth", moneyPerMonth);
 			responseJson1.addProperty("success", true);
 			out.print(responseJson1);
 		} catch (SQLException e) {
