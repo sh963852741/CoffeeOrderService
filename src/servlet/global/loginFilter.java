@@ -52,7 +52,11 @@ public class loginFilter implements Filter {
 				"/login",
 				"/regist",
 				"getVerificationCode",
-				"retrievePassword"
+				"retrievePassword",
+				"getMealBySort",
+				"getAllMeal",
+				"downloadImg"
+
 		};
 		for(String item:whiteList) {
 			if(uri.contains(item)) {
