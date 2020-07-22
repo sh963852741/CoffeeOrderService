@@ -65,7 +65,13 @@ public class CreateOrder extends HttpServlet {
 		JsonObject jsonObj = jsonEle.getAsJsonObject();
 		String orderId = UUID.randomUUID().toString();
 		String userId = (String) session.getAttribute("userId");
-		String addrId = jsonObj.get("addrId").getAsString();
+		String addrId;
+		if(jsonObj.get("addrId") == null || jsonObj.get("addrId").isJsonNull()) {
+			addrId = null;
+		} else {
+			addrId = jsonObj.get("addrId").getAsString();
+		}
+		 
 		String remark = jsonObj.get("remark").getAsString();
 		String payment = jsonObj.get("payment").getAsString();
 		float packingCharges = jsonObj.get("packingCharges").getAsFloat();
@@ -80,7 +86,7 @@ public class CreateOrder extends HttpServlet {
 			String addOrderMealSql = "INSERT INTO meal_order(mealId, orderId, amount, price) VALUES(?, ?, ?, ?);";
 			String selectMealSql = "SELECT * FROM meal Where mealId = ?;";
 			String addOrderSql = "INSERT INTO orders(orderId, userId, addrId, isTakeOut, remark,"
-					+ "payment, packingCharges, deliveryFee) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);";
+					+ "payment, packingCharges, deliveryFee) VALUES(?, ?, ?, ?, ?, ?, ?, ?);";
 			PreparedStatement selectMealPs = conn.prepareStatement(selectMealSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 			PreparedStatement addOrderMealPs = conn.prepareStatement(addOrderMealSql);
 			PreparedStatement assOrderPs = conn.prepareStatement(addOrderSql);
@@ -94,7 +100,8 @@ public class CreateOrder extends HttpServlet {
 			assOrderPs.setString(6, payment);
 			assOrderPs.setFloat(7, packingCharges);
 			assOrderPs.setFloat(8, deliveryFee);
-
+			assOrderPs.executeUpdate();
+			
 			float totalPrice = 0;
 
 			for(JsonElement item :data) {
@@ -130,9 +137,10 @@ public class CreateOrder extends HttpServlet {
 			setTotalPricePs.setFloat(1, totalPrice + packingCharges + deliveryFee);
 			setTotalPricePs.setString(2, orderId);
 			setTotalPricePs.executeUpdate();
+			
 			setTotalPricePs.close();
-			assOrderPs.close();
 			selectMealPs.close();
+			assOrderPs.close();
 			addOrderMealPs.close();
 			
 			responseJson.addProperty("success", true);
