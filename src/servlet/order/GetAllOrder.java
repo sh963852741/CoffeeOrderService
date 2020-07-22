@@ -70,7 +70,7 @@ public class GetAllOrder extends HttpServlet {
 		Connection conn = null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=Asia/Shanghai","coffee","TklRpGi1");
 			String countSql = "Select count(*) as total From orders;";
 			String orderDetailSql = "SELECT * FROM coffee.orders Natural Join coffee.user Limit ?, ?;";
 			String orderPriceSql = "Select sum(amount*price) as totalPrice from meal_order where orderId=?;";

@@ -57,7 +57,7 @@ public class FinishOrder extends HttpServlet {
 		Connection conn=null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn=DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT","coffee","TklRpGi1");
+			conn=DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=Asia/Shanghai","coffee","TklRpGi1");
 			/*以创建订单时返回的orderId为传入参数*/
 			String orderId = requestJson.get("orderId").getAsString();
 			String targetStatus = requestJson.get("targetStatus").getAsString();

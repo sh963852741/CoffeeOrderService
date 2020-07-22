@@ -61,7 +61,7 @@ public class GetOrderDetail extends HttpServlet {
 		Connection conn = null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=Asia/Shanghai","coffee","TklRpGi1");
 
 			String mealListSql = "select mealId, amount, price from meal_order where orderId = ?";
 			String mealSql = "select mealName, pictureUrl from meal where mealId = ?";

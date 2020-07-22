@@ -59,9 +59,9 @@ public class MealSatisfaction extends HttpServlet {
 			
 			/* 构建SQL语句  */
 			/*过去一个月订单量变化趋势*/
-			String sql3 = "select COUNT(*) AS amount, DATE(createdTime) AS time FROM orders where"
+			String sql3 = "select COUNT(*) AS amount, DATE_FORMAT(createdTime, '%d') AS time FROM orders where"
 					+ " createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()"
-					+ " GROUP BY time ORDER BY time;";
+					+ " GROUP BY DATE(createdTime) ORDER BY DATE(createdTime);";
 			/*过去一个月支付方式统计*/
 			String sql4 = "select payment,COUNT(*) AS amount, DATE(createdTime) AS time FROM orders"
 					+ " WHERE createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()" + 
@@ -85,9 +85,9 @@ public class MealSatisfaction extends HttpServlet {
 			while(rs3.next()) {
 				int amount = rs3.getInt("amount");
 				totalOrders+=amount;
-				Date time = rs3.getDate("time");
+				String time = rs3.getString("time");
 				jsonarray31.add(amount);
-				jsonarray32.add(time.toString());
+				jsonarray32.add(time);
 			}
 			ResultSet rs4 = stmt.executeQuery(sql4);
 			JsonArray jsonarray4 = new JsonArray();

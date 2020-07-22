@@ -81,7 +81,7 @@ public class CreateOrder extends HttpServlet {
 		
 		Connection conn = null;
 		try {
-			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT","coffee","TklRpGi1");
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=Asia/Shanghai","coffee","TklRpGi1");
 			
 			String addOrderMealSql = "INSERT INTO meal_order(mealId, orderId, amount, price) VALUES(?, ?, ?, ?);";
 			String selectMealSql = "SELECT * FROM meal Where mealId = ?;";

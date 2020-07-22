@@ -55,10 +55,10 @@ public class GetOrderListByUserId extends HttpServlet {
 		Connection conn=null;
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
-			conn=DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=GMT", "coffee", "TklRpGi1");
+			conn=DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?serverTimezone=Asia/Shanghai", "coffee", "TklRpGi1");
 
 			String userId = (String)session.getAttribute("userId");
-			String sql="select * from orders where userId= ?";
+			String sql="select * from orders where userId= ? order by createdTime desc";
 			PreparedStatement ps = conn.prepareStatement(sql);
 			ps.setString(1,userId);
 			ResultSet rs = ps.executeQuery();
@@ -67,7 +67,7 @@ public class GetOrderListByUserId extends HttpServlet {
 			while(rs.next()) {
 				JsonObject obj = new JsonObject();
 				obj.addProperty("orderId", rs.getString("orderId"));
-				obj.addProperty("createdTime", rs.getTime("createdTime").toString());
+				obj.addProperty("createdTime", rs.getTimestamp("createdTime").toString());
 				obj.addProperty("status", rs.getString("status"));
 				obj.addProperty("addrId", rs.getString("addrId"));
 				obj.addProperty("isTakeOut", rs.getBoolean("isTakeOut"));
