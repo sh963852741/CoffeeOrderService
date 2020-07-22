@@ -58,6 +58,10 @@ public class MealSatisfaction extends HttpServlet {
 			Statement stmt = conn.createStatement();
 			
 			/* 构建SQL语句  */
+			String sql2 = "select type,COUNT(*) AS amount" + 
+					" FROM meal_order, meal, orders WHERE meal_order.mealId = meal.mealId "
+					+ "and meal_order.orderId = orders.orderId and createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()"
+					+ " GROUP BY type ORDER BY amount DESC;";
 			/*过去一个月订单量变化趋势*/
 			String sql3 = "select COUNT(*) AS amount, DATE_FORMAT(createdTime, '%d') AS time FROM orders where"
 					+ " createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()"
@@ -79,6 +83,16 @@ public class MealSatisfaction extends HttpServlet {
 					+ " WHERE createdTime BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW()";
 			/*处理数据*/
 			int totalOrders = 0;
+			ResultSet rs2 = stmt.executeQuery(sql2);
+			JsonArray jsonarray2 = new JsonArray();
+			while(rs2.next()) {
+				int amount = rs2.getInt("amount");
+				String type = rs2.getString("type");
+				JsonObject jsonobj =new JsonObject();
+				jsonobj.addProperty("amount", amount);
+				jsonobj.addProperty("type", type);
+				jsonarray2.add(jsonobj);
+			}
 			ResultSet rs3 = stmt.executeQuery(sql3);
 			JsonArray jsonarray31 = new JsonArray();
 			JsonArray jsonarray32 = new JsonArray();
@@ -129,6 +143,7 @@ public class MealSatisfaction extends HttpServlet {
 			/* 处理执行结果 */
 			JsonObject responseJson1 = new JsonObject();
 			responseJson1.addProperty("totalOrders",totalOrders);
+			responseJson1.add("typeList", jsonarray2);
 			responseJson1.add("OrderChangeListX", jsonarray32);
 			responseJson1.add("OrderChangeListY", jsonarray31);
 			responseJson1.add("paymentWay", jsonarray4);
