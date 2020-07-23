@@ -72,6 +72,7 @@ public class GetRoleList extends HttpServlet {
 			while(rs2.next()){
 				JSONObject jsonobj2 = new JSONObject();
 				jsonobj2.put("privilegeName", rs2.getString("name_zh"));
+				jsonobj2.put("privilegeNameEN", rs2.getString("name_en"));
 				jsonobj2.put("privilegeId", rs2.getString("id"));
 				jsonarray2.add(jsonobj2);
 			}

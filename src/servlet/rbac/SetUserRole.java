@@ -88,7 +88,7 @@ public class SetUserRole extends HttpServlet {
 			PreparedStatement ps1 = conn.prepareStatement(sql1);
 			ps1.setString(1, userId);
 			
-			String sql2 = "INSERT INTO role_user('roleName', 'userId') VALUES(?, ?)";
+			String sql2 = "INSERT INTO role_user('roleId', 'userId') VALUES(?, ?)";
 			PreparedStatement ps2 = conn.prepareStatement(sql2);
 			ps2.setString(2, userId);
 			

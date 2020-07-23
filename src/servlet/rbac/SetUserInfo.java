@@ -97,7 +97,7 @@ public class SetUserInfo extends HttpServlet {
 			PreparedStatement ps3 = conn.prepareStatement(sql3);
 			ps3.setString(1, userId);
 			
-			String sql2 = "INSERT INTO role_user(roleName, userId) VALUES(?, ?);";
+			String sql2 = "INSERT INTO role_user(roleId, userId) VALUES(?, ?);";
 			PreparedStatement ps2 = conn.prepareStatement(sql2);
 			ps2.setString(2, userId);
 			

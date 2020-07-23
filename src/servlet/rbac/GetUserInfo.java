@@ -100,7 +100,7 @@ public class GetUserInfo extends HttpServlet {
 			}
 			
 			while(rs2.next()){
-				jsonarray.add(rs2.getString("roleName"));
+				jsonarray.add(rs2.getString("roleId"));
 			}
 			responseJson.add("role", jsonarray);
 			

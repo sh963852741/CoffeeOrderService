@@ -17,6 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import net.sf.json.JSONObject;
 
 /**
@@ -55,7 +58,6 @@ public class Login extends HttpServlet {
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
-			Statement stmt = conn.createStatement();
 			ServletInputStream is;
 			try {
 				is = request.getInputStream();
@@ -72,28 +74,37 @@ public class Login extends HttpServlet {
 				String userName = jsonObj.getString("userName");
 				String password = jsonObj.getString("password");
 				String sql = "select * from user where userName=? and password=?";
+				String privilegeSql = "SELECT name_en FROM privilege JOIN privilege_role ON privilege_role.privilegeId = privilege.id "
+						+ "JOIN role_user ON privilege_role.roleId = role_user.roleId WHERE userId = ?;";
 				PreparedStatement ps = conn.prepareStatement(sql);
+				PreparedStatement privilegePs = conn.prepareStatement(privilegeSql);
 				ps.setString(1, userName);
 				ps.setString(2, password);
+				
 				ResultSet rs = ps.executeQuery();
-				JSONObject jsonobj = new JSONObject();
+				JsonObject jsonobj = new JsonObject();
 				if(rs.next()){
-					jsonobj.put("success",true);
 					String userId = rs.getString("userId");
-					String sessionId = session.getId();
+					privilegePs.setString(1, userId);
+					ResultSet privilegeRs = privilegePs.executeQuery();
+					JsonArray privileges = new JsonArray();
+					while(privilegeRs.next()) {
+						privileges.add(privilegeRs.getString("name_en"));
+					}
+					privilegeRs.close();
 					session.setAttribute("userId", userId);
 					session.setAttribute("login", true);
-					jsonobj.put("sessionId",sessionId);
-					
+					session.setAttribute("privileges", privileges);
+					jsonobj.addProperty("success",true);
+					jsonobj.add("privileges", privileges);
 				}
 				else {
-					jsonobj.put("success",false);
-					jsonobj.put("msg", "用户名或密码错误");
+					jsonobj.addProperty("success",false);
+					jsonobj.addProperty("msg", "用户名或密码错误");
 				}
 				out = response.getWriter();
-				out.println(jsonobj);
+				out.print(jsonobj);
 				rs.close();
-				stmt.close();
 				conn.close();
 			} catch (IOException e) {
 				e.printStackTrace();

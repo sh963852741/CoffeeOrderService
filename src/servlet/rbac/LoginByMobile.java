@@ -1,18 +1,25 @@
 package servlet.rbac;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import net.sf.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Servlet implementation class getUserInfo
@@ -43,46 +50,62 @@ public class LoginByMobile extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		response.setContentType("text/json; charset=utf-8");
+		request.setCharacterEncoding("UTF-8");
+		response.setCharacterEncoding("UTF-8");
 		PrintWriter out = response.getWriter();
-		ServletInputStream is;
 		
+		Connection conn = null;
 		try {
-			is = request.getInputStream();
-			int nRead = 1;
-			int nTotalRead = 0;
-			byte[] bytes = new byte[10240];
-			while (nRead > 0) {
-				nRead = is.read(bytes, nTotalRead, bytes.length - nTotalRead);
-				if (nRead > 0)
-					nTotalRead = nTotalRead + nRead;
-			}
-			String str = new String(bytes, 0, nTotalRead, "utf-8");
+			conn = DriverManager.getConnection("jdbc:mysql://106.13.201.225:3306/coffee?useSSL=false&serverTimezone=GMT","coffee","TklRpGi1");
+			
+			BufferedReader reader = request.getReader();
+			JsonObject requestJson = JsonParser.parseReader(reader).getAsJsonObject();
 			HttpSession session = request.getSession();
-			JSONObject jsonObj = JSONObject.fromObject(str);
-			String VerificationCode_user = jsonObj.getString("code");
+			String VerificationCode_user = requestJson.get("code").getAsString();
 			String VerificationCode_session =(String)session.getAttribute("VerificationCode");
-			JSONObject jsonobj = new JSONObject();
+			
+			JsonObject jsonobj = new JsonObject();
 			if(VerificationCode_user.equals(VerificationCode_session))
 			{
+				String privilegeSql = "SELECT name_en FROM privilege JOIN privilege_role ON privilege_role.privilegeId = privilege.id "
+						+ "JOIN role_user ON privilege_role.roleId = role_user.roleId WHERE userId = ?;";
+				PreparedStatement privilegePs = conn.prepareStatement(privilegeSql);
+				privilegePs.setString(1, (String)session.getAttribute("userId"));
+				ResultSet privilegeRs = privilegePs.executeQuery();
+				JsonArray privileges = new JsonArray();
+				while(privilegeRs.next()) {
+					privileges.add(privilegeRs.getString("name_en"));
+				}
+				privilegeRs.close();
+				
 				session.setAttribute("login", true);
 				session.removeAttribute("VerificationCode");
 				session.setMaxInactiveInterval(-1); // 永不过时
-				jsonobj.put("success", true);
-				jsonobj.put("msg", "登录成功");
+				session.setAttribute("privileges", privileges);
+				
+				jsonobj.add("privileges", privileges);
+				jsonobj.addProperty("success", true);
+				jsonobj.addProperty("msg", "登录成功");
 			}
 			else
 			{
-				jsonobj.put("success", false);
-				jsonobj.put("msg", "验证码不匹配");
+				jsonobj.addProperty("success", false);
+				jsonobj.addProperty("msg", "验证码错误");
 			}
-			if(jsonobj.isEmpty()) {
-				jsonobj.put("success", false);
-				jsonobj.put("msg", "操作失败");
-			}
+			
 			out = response.getWriter();
 			out.println(jsonobj);
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (SQLException | IOException e) {
+			JsonObject responseJson = new JsonObject();
+			responseJson.addProperty("success",false);
+			responseJson.addProperty("msg", e.getMessage());
+			out.println(responseJson);
+			try {
+				conn.rollback();
+				conn.close();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 

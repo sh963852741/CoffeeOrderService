@@ -97,7 +97,7 @@ public class GetOrderDetail extends HttpServlet {
 			ResultSet orderRs = orderPs.executeQuery();
 			JsonObject responseJson = new JsonObject();
 			orderRs.next();
-			responseJson.addProperty("createdTime", orderRs.getTime("createdTime").toString());
+			responseJson.addProperty("createdTime", orderRs.getTimestamp("createdTime").toString());
 			responseJson.addProperty("status", orderRs.getString("status"));
 			responseJson.addProperty("addrId", orderRs.getString("addrId"));
 			responseJson.addProperty("isTakeOut", orderRs.getBoolean("isTakeOut"));
